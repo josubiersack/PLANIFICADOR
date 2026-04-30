@@ -9,7 +9,7 @@ import html2pdf from "html2pdf.js";
 const HORAS_CLASE = ["1RA","2DA","3RA","4TA","5TA","6TA","7MA","8VA"];
 
 const CURSOS = ["OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVENO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
-const ASIGNATURAS = ["MATEMÁTICAS","ROBÓTICA","PPE - PROGRAMA DE PARTICIPACIÓN ESTUDIANTIL","LABORATORIO DE QUÍMICA"];
+const ASIGNATURAS = ["MATEMÁTICAS","LENGUAJE","ROBÓTICA","PPE - PROGRAMA DE PARTICIPACIÓN ESTUDIANTIL","LABORATORIO DE QUÍMICA"];
 const DIAS_SEMANA = ["LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES"];
 const TRIMESTRES = ["PRIMER","SEGUNDO","TERCER"];
 const TIEMPOS_CLASE = [
@@ -646,12 +646,17 @@ function FormularioUEPA() {
             Plan Diario — Formato UEPA
           </h2>
           <div className="fila-dos">
+            <div className="campo"><label>👤 Nombre del docente</label>
+              <input value={pd.docente} onChange={e=>setPd(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
+            </div>
             <div className="campo"><label>Asignatura</label>
               <select value={pd.asignatura} onChange={e=>setPd(p=>({...p,asignatura:e.target.value}))}>
                 <option value="">Seleccionar...</option>
                 {ASIGNATURAS.map(a=><option key={a}>{a}</option>)}
               </select>
             </div>
+          </div>
+          <div className="fila-dos">
             <div className="campo"><label>Curso</label>
               <select value={pd.curso} onChange={e=>setPd(p=>({...p,curso:e.target.value}))}>
                 <option value="">Seleccionar...</option>
@@ -768,12 +773,17 @@ function FormularioUEPA() {
             Adaptación Curricular — NEE
           </h2>
           <div className="fila-dos">
+            <div className="campo"><label>👤 Nombre del docente</label>
+              <input value={nee.docente} onChange={e=>setNee(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
+            </div>
             <div className="campo"><label>Asignatura</label>
               <select value={nee.asignatura} onChange={e=>setNee(p=>({...p,asignatura:e.target.value}))}>
                 <option value="">Seleccionar...</option>
                 {ASIGNATURAS.map(a=><option key={a}>{a}</option>)}
               </select>
             </div>
+          </div>
+          <div className="fila-dos">
             <div className="campo"><label>Curso</label>
               <select value={nee.curso} onChange={e=>setNee(p=>({...p,curso:e.target.value}))}>
                 <option value="">Seleccionar...</option>

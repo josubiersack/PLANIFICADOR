@@ -20,6 +20,7 @@ const niveles = {
 
 const asignaturas = [
   "Lengua y Literatura",
+  "Lenguaje",
   "Matemática",
   "Ciencias Naturales",
   "Estudios Sociales",
