@@ -1,6 +1,6 @@
-const Groq = require("groq-sdk");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -102,14 +102,11 @@ IMPORTANTE:
 `;
 
   try {
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
 
-    const texto = response.choices[0].message.content;
+    const texto = response.text();
     const limpio = texto.replace(/```json|```/g, "").trim();
     const planificacion = JSON.parse(limpio);
 
