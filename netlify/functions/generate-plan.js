@@ -99,37 +99,34 @@ IMPORTANTE:
 - El tiempo total de actividades debe sumar exactamente ${tiempo} minutos
 `;
 
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "meta-llama/llama-3.3-70b-instruct:free",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        max_tokens: 3000,
-      }),
-    });
-    const data = await response.json();
-    if (!data.choices || !data.choices[0]) {
-      return { statusCode: 500, body: JSON.stringify({ error: "OpenRouter error: " + JSON.stringify(data) }) };
-    }
-    const texto = data.choices[0].message.content;
-    const limpio = texto.replace(/```json|```/g, "").trim();
-    const planificacion = JSON.parse(limpio);
+  const models = [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen3-30b-a3b:free",
+    "google/gemini-2.0-flash-exp:free",
+  ];
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(planificacion),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error al generar la planificación: " + error.message }),
-    };
+  for (const model of models) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          max_tokens: 3000,
+        }),
+      });
+      const data = await response.json();
+      if (!data.choices || !data.choices[0]) continue;
+      const texto = data.choices[0].message.content;
+      const limpio = texto.replace(/```json|```/g, "").trim();
+      const planificacion = JSON.parse(limpio);
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(planificacion) };
+    } catch (e) { continue; }
   }
+  return { statusCode: 500, body: JSON.stringify({ error: "Todos los modelos están ocupados. Intenta en unos segundos." }) };
 };

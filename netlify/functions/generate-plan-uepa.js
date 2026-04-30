@@ -143,29 +143,34 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "meta-llama/llama-3.3-70b-instruct:free",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        max_tokens: 4500,
-      }),
-    });
-    const result = await response.json();
-    if (!result.choices || !result.choices[0]) {
-      return { statusCode: 500, body: JSON.stringify({ error: "OpenRouter error: " + JSON.stringify(result) }) };
-    }
-    const texto = result.choices[0].message.content;
-    const limpio = texto.replace(/```json|```/g, "").trim();
-    const data = JSON.parse(limpio);
-    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
-  } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+  const models = [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen3-30b-a3b:free",
+    "google/gemini-2.0-flash-exp:free",
+  ];
+
+  for (const model of models) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          max_tokens: 4500,
+        }),
+      });
+      const result = await response.json();
+      if (!result.choices || !result.choices[0]) continue;
+      const texto = result.choices[0].message.content;
+      const limpio = texto.replace(/```json|```/g, "").trim();
+      const data = JSON.parse(limpio);
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
+    } catch (e) { continue; }
   }
+  return { statusCode: 500, body: JSON.stringify({ error: "Todos los modelos están ocupados. Intenta en unos segundos." }) };
 };
