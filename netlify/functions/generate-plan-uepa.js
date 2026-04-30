@@ -1,10 +1,15 @@
 const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
 
-  const { asignatura, curso, semana, dias, tema, tiempo, diagnostico, tipo, grado, esNEE, detallesPorDia } = JSON.parse(event.body);
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return { statusCode: 500, body: JSON.stringify({ error: "GROQ_API_KEY no está configurada en las variables de entorno de Netlify." }) };
+  }
+  const groq = new Groq({ apiKey });
+
+  const { asignatura, curso, semana, dias, tema, tiempo, diagnostico, tipo, grado, esNEE, detallesPorDia, nombreEstudiante } = JSON.parse(event.body);
 
   const duraciones = {
     "35": { inicio: "10 MIN", desarrollo: "15 MIN", cierre: "10 MIN" },
@@ -23,7 +28,8 @@ exports.handler = async function (event) {
     prompt = `
 Eres un docente experto en Adaptaciones Curriculares para estudiantes con NEE de la Unidad Educativa Particular Americano de Manta, Ecuador.
 
-Genera contenido ADAPTADO para un estudiante NEE:
+Genera contenido ADAPTADO para el/la estudiante NEE:
+- Nombre del estudiante: ${nombreEstudiante || "No especificado"}
 - Asignatura: ${asignatura}
 - Curso: ${curso}
 - ${temasInfo}
@@ -32,7 +38,9 @@ Genera contenido ADAPTADO para un estudiante NEE:
 - Grado de adaptación: ${grado || "Grado 2"}
 - Tiempo: ${tiempo || 40} minutos
 
-IMPORTANTE: Las actividades deben estar ADAPTADAS al diagnóstico del estudiante.
+IMPORTANTE CRÍTICO: Las actividades deben estar ESPECÍFICAMENTE ADAPTADAS al diagnóstico "${diagnostico}" de este estudiante. 
+Cada diagnóstico requiere estrategias DIFERENTES. Por ejemplo: TDAH necesita actividades cortas y dinámicas, Autismo necesita rutinas visuales claras, Discalculia necesita material concreto para matemáticas, etc.
+NO generes contenido genérico. El contenido DEBE ser ÚNICO para el diagnóstico "${diagnostico}".
 
 REGLAS DE FORMATO:
 - El campo "contenido" debe contener ÚNICAMENTE el nombre del tema (ej: "El plano cartesiano", "Ecuaciones lineales"). Solo el tema, nada más.
@@ -153,9 +161,16 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
     });
     const texto = response.choices[0].message.content;
     const limpio = texto.replace(/```json|```/g, "").trim();
-    const data = JSON.parse(limpio);
+    let data;
+    try {
+      data = JSON.parse(limpio);
+    } catch (parseErr) {
+      return { statusCode: 500, body: JSON.stringify({ error: "La IA no devolvió JSON válido. Respuesta: " + limpio.substring(0, 200) }) };
+    }
     return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
   } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    const msg = error?.error?.message || error?.message || String(error);
+    const status = error?.status || error?.statusCode || 500;
+    return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${msg}` }) };
   }
 };

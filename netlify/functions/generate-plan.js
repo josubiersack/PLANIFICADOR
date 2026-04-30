@@ -1,10 +1,16 @@
 const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
+
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return { statusCode: 500, body: JSON.stringify({ error: "GROQ_API_KEY no está configurada en las variables de entorno de Netlify." }) };
+  }
+  const groq = new Groq({ apiKey });
+
 
   const { nivel, subnivel, asignatura, tema, tiempo, docente, institucion, grado, fecha } = JSON.parse(event.body);
 
@@ -112,6 +118,8 @@ IMPORTANTE:
     const planificacion = JSON.parse(limpio);
     return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(planificacion) };
   } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Error al generar la planificación: " + error.message }) };
+    const msg = error?.error?.message || error?.message || String(error);
+    const status = error?.status || error?.statusCode || 500;
+    return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${msg}` }) };
   }
 };

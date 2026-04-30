@@ -152,10 +152,11 @@ function FormularioUEPA() {
   const [nee, setNee] = useState({
     docente:"LIC. JOSUÉ CRUZ ZAMBRANO",
     asignatura:"", curso:"", semana:"",
-    tema:"", tiempo:"40",
+    tema:"", tiempo:"40", fechaLunes:"",
     estudiantes:[],
   });
   const [cargandoNee, setCargandoNee] = useState({});
+  const [cargandoTodosNee, setCargandoTodosNee] = useState(false);
 
   const toggleDia = (dia) => setPd(prev => {
     const sel = prev.diasSel.includes(dia)
@@ -200,6 +201,10 @@ function FormularioUEPA() {
         body:JSON.stringify({asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel, detallesPorDia: pd.diasSel.reduce((acc, dia) => { acc[dia] = pd.dias[dia]?.detalles || ""; return acc; }, {})}),
       });
       const data = await resp.json();
+      if (!resp.ok) {
+        alert("Error del servidor: " + (data.error || JSON.stringify(data)));
+        return;
+      }
       if (data.dias) {
         setPd(prev => {
           const nd = {...prev.dias};
@@ -208,21 +213,67 @@ function FormularioUEPA() {
         });
       }
     } catch(e) {
-      alert("Error con la IA. Puedes llenar los campos manualmente.");
+      alert("Error con la IA: " + e.message);
     } finally { setCargando(false); }
   };
 
   const addEst = () => setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, estVacio()]}));
   const removeEst = (id) => setNee(prev => ({...prev, estudiantes:prev.estudiantes.filter(e=>e.id!==id)}));
+
+  // Agregar TODOS los estudiantes de un curso del catálogo
+  const addEstsPorCurso = (cursoFiltro) => {
+    if (!cursoFiltro) { alert("Selecciona un curso primero."); return; }
+    const cursoMap = {
+      "OCTAVO EGB A": "8VO EGB A", "OCTAVO EGB B": "8VO EGB B",
+      "NOVENO EGB A": "9NO EGB A", "NOVENO EGB B": "9NO EGB B",
+      "DÉCIMO EGB A": "10MO EGB", "DÉCIMO EGB B": "10MO EGB B",
+      "PRIMERO BGU": "1ERO BGU", "SEGUNDO BGU": "2DO BGU", "TERCERO BGU": "3ERO BGU",
+    };
+    const cursoCorto = cursoMap[cursoFiltro] || cursoFiltro;
+    const encontrados = CATALOGO_NEE.filter(e => e.curso === cursoCorto);
+    if (encontrados.length === 0) { alert(`No hay estudiantes NEE registrados para ${cursoFiltro}.`); return; }
+    setNee(prev => {
+      const nombresExistentes = prev.estudiantes.map(e => e.nombre);
+      const nuevos = encontrados.filter(e => !nombresExistentes.includes(e.nombre))
+        .map(cat => ({...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado}));
+      if (nuevos.length === 0) { alert("Todos los estudiantes de ese curso ya están agregados."); return prev; }
+      return {...prev, estudiantes:[...prev.estudiantes, ...nuevos]};
+    });
+  };
   const updateEst = (id, campo, val) => setNee(prev => ({
     ...prev, estudiantes:prev.estudiantes.map(e=>e.id===id?{...e,[campo]:val}:e)
   }));
+
+  // Calcular fecha automática a partir del lunes
+  const calcFechaDia = (fechaLunes, dia) => {
+    if (!fechaLunes) return "";
+    const monday = new Date(fechaLunes + "T12:00:00");
+    const idx = DIAS_SEMANA.indexOf(dia);
+    const d = new Date(monday); d.setDate(d.getDate() + idx);
+    return d.toISOString().split('T')[0];
+  };
+
+  // Cuando cambia la fecha del lunes, recalcular todas las fechas de todos los estudiantes
+  const cambiarFechaLunes = (nuevaFecha) => {
+    setNee(prev => {
+      const nuevosEst = prev.estudiantes.map(est => {
+        const nuevosDias = {...est.dias};
+        est.diasSel.forEach(dia => {
+          if (nuevosDias[dia]) nuevosDias[dia] = {...nuevosDias[dia], fecha: calcFechaDia(nuevaFecha, dia)};
+        });
+        return {...est, dias: nuevosDias};
+      });
+      return {...prev, fechaLunes: nuevaFecha, estudiantes: nuevosEst};
+    });
+  };
 
   const toggleEstDia = (estId, dia) => setNee(prev => ({
     ...prev, estudiantes: prev.estudiantes.map(e => {
       if (e.id !== estId) return e;
       const sel = e.diasSel.includes(dia) ? e.diasSel.filter(d=>d!==dia) : [...e.diasSel, dia];
-      return {...e, diasSel:sel, dias:{...e.dias, [dia]:e.dias[dia]||diaEstVacio(prev.tiempo)}};
+      let newDia = e.dias[dia] || diaEstVacio(prev.tiempo);
+      if (!e.dias[dia]) newDia = {...newDia, fecha: calcFechaDia(prev.fechaLunes, dia)};
+      return {...e, diasSel:sel, dias:{...e.dias, [dia]: newDia}};
     })
   }));
 
@@ -270,10 +321,15 @@ function FormularioUEPA() {
           asignatura: nee.asignatura, curso: nee.curso, semana: nee.semana,
           tema: nee.tema, tiempo: nee.tiempo,
           diagnostico: est.diagnostico, tipo: est.tipo, grado: est.grado,
+          nombreEstudiante: est.nombre,
           esNEE: true, dias: est.diasSel,
         }),
       });
       const data = await resp.json();
+      if (!resp.ok) {
+        alert("Error del servidor: " + (data.error || JSON.stringify(data)));
+        return;
+      }
       if (data.dias) {
         const temas = nee.tema ? nee.tema.split("-").map(t => t.trim()).filter(t => t) : [];
         setNee(prev => ({
@@ -296,10 +352,33 @@ function FormularioUEPA() {
         }));
       }
     } catch(err) {
-      alert("Error con la IA. Puedes llenar los campos manualmente.");
+      alert(`Error con la IA para ${est.nombre}: ${err.message}`);
     } finally {
       setCargandoNee(prev => ({...prev, [estId]: false}));
     }
+  };
+
+  // Generar IA para TODOS los estudiantes secuencialmente
+  const generarIATodosNee = async () => {
+    if (!nee.asignatura || !nee.curso || !nee.tema) {
+      alert("Completa asignatura, curso y tema antes de generar.");
+      return;
+    }
+    const estConDias = nee.estudiantes.filter(e => e.diasSel.length > 0);
+    if (estConDias.length === 0) { alert("Selecciona al menos un día para cada estudiante."); return; }
+    setCargandoTodosNee(true);
+    let errores = [];
+    for (const est of estConDias) {
+      setCargandoNee(prev => ({...prev, [est.id]: true}));
+      try {
+        await generarIANee(est.id);
+      } catch(e) { errores.push(est.nombre); }
+      // Pequeña pausa entre llamadas para evitar rate-limiting
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    setCargandoTodosNee(false);
+    if (errores.length > 0) alert(`Hubo errores con: ${errores.join(", ")}`);
+    else alert(`✅ Se generaron las planificaciones para ${estConDias.length} estudiante(s).`);
   };
 
   const crearHeader = async (titulo) => {
@@ -841,6 +920,12 @@ function FormularioUEPA() {
               </select>
             </div>
           </div>
+          <div className="fila-dos" style={{marginTop:"0.5rem"}}>
+            <div className="campo"><label>📅 Fecha del LUNES <span style={{fontSize:"0.75rem",color:"#718096",fontWeight:400}}>(las fechas de cada día se calculan automáticamente)</span></label>
+              <input type="date" value={nee.fechaLunes} onChange={e=>cambiarFechaLunes(e.target.value)} style={{padding:"0.5rem",border:"1.5px solid #e2e8f0",borderRadius:"8px",fontSize:"0.85rem"}}/>
+              {nee.fechaLunes && <span style={{fontSize:"0.75rem",color:"#276749",marginTop:"0.25rem",display:"block"}}>✅ Fechas auto: Lun {calcFechaDia(nee.fechaLunes,"LUNES")} → Vie {calcFechaDia(nee.fechaLunes,"VIERNES")}</span>}
+            </div>
+          </div>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0",gap:"0.75rem",flexWrap:"wrap"}}>
             <h3 style={{color:"#1a365d",fontSize:"1rem"}}>Estudiantes con NEE</h3>
@@ -859,6 +944,11 @@ function FormularioUEPA() {
                 sel.value = "";
               }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
                 ✚ Agregar seleccionado
+              </button>
+              <button onClick={()=>addEstsPorCurso(nee.curso)}
+                style={{padding:"0.5rem 1rem",background:"#2b6cb0",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}
+                disabled={!nee.curso}>
+                👥 Agregar TODOS del curso
               </button>
               <button onClick={addEst} style={{padding:"0.5rem 1rem",background:"#c53030",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
                 + Agregar manual
@@ -978,7 +1068,7 @@ function FormularioUEPA() {
               <div style={{display:"flex",gap:"0.75rem",marginTop:"1rem"}}>
                 <button onClick={()=>generarIANee(est.id)}
                   style={{flex:1,padding:"0.7rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600}}
-                  disabled={!nee.asignatura||!nee.curso||!nee.tema||est.diasSel.length===0||cargandoNee[est.id]}>
+                  disabled={!nee.asignatura||!nee.curso||!nee.tema||est.diasSel.length===0||cargandoNee[est.id]||cargandoTodosNee}>
                   {cargandoNee[est.id]?"⏳ Generando...":"✨ Generar con IA"}
                 </button>
                 <button onClick={()=>exportarNEE(est)}
@@ -989,11 +1079,22 @@ function FormularioUEPA() {
                 <button onClick={()=>exportarPDFNee(est)}
                   style={{flex:1,padding:"0.7rem",background:"#c53030",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600}}
                   disabled={!est.nombre||!nee.asignatura||est.diasSel.length===0}>
-                  📕 PDF — {est.grado}
+                  📕 PDF — {est.nombre ? est.nombre.split(" ").slice(-1)[0] : est.grado}
                 </button>
               </div>
             </div>
           )})}
+
+          {/* Botón global: Generar TODOS con IA */}
+          {nee.estudiantes.length > 0 && (
+            <div style={{display:"flex",gap:"0.75rem",marginTop:"1.5rem",padding:"1rem",background:"#f0fff4",borderRadius:"10px",border:"2px solid #276749"}}>
+              <button onClick={generarIATodosNee}
+                style={{flex:1,padding:"0.85rem",background:"linear-gradient(135deg,#276749,#2b6cb0)",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:700,fontSize:"1rem",letterSpacing:"0.5px"}}
+                disabled={!nee.asignatura||!nee.curso||!nee.tema||cargandoTodosNee||nee.estudiantes.every(e=>e.diasSel.length===0)}>
+                {cargandoTodosNee ? `⏳ Generando para ${nee.estudiantes.filter(e=>e.diasSel.length>0).length} estudiantes...` : `🚀 Generar IA para TODOS (${nee.estudiantes.filter(e=>e.diasSel.length>0).length} estudiantes)`}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
