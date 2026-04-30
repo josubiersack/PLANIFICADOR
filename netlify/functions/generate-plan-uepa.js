@@ -152,12 +152,11 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  // Modelos de respaldo ordenados por capacidad
+  // Modelos de respaldo — llama-3.3-70b como principal
   const modelos = [
     { id: "llama-3.3-70b-versatile", maxTk: 4500 },
     { id: "llama3-70b-8192", maxTk: 4000 },
     { id: "gemma2-9b-it", maxTk: 3500 },
-    { id: "llama-3.1-8b-instant", maxTk: 2500 },
   ];
 
   let lastError = null;
@@ -168,6 +167,7 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
         max_tokens: modelo.maxTk,
+        response_format: { type: "json_object" },
       });
       const texto = response.choices[0].message.content;
       const limpio = texto.replace(/```json|```/g, "").trim();

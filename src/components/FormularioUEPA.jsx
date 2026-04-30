@@ -373,8 +373,8 @@ function FormularioUEPA() {
       try {
         await generarIANee(est.id);
       } catch(e) { errores.push(est.nombre); }
-      // Pequeña pausa entre llamadas para evitar rate-limiting
-      await new Promise(r => setTimeout(r, 1500));
+      // Pausa de 3s entre llamadas para evitar rate-limiting
+      await new Promise(r => setTimeout(r, 3000));
     }
     setCargandoTodosNee(false);
     if (errores.length > 0) alert(`Hubo errores con: ${errores.join(", ")}`);

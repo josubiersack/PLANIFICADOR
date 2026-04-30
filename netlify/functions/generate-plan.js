@@ -109,7 +109,6 @@ IMPORTANTE:
     { id: "llama-3.3-70b-versatile", maxTk: 3000 },
     { id: "llama3-70b-8192", maxTk: 3000 },
     { id: "gemma2-9b-it", maxTk: 2500 },
-    { id: "llama-3.1-8b-instant", maxTk: 2000 },
   ];
 
   let lastError = null;
@@ -120,6 +119,7 @@ IMPORTANTE:
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
         max_tokens: modelo.maxTk,
+        response_format: { type: "json_object" },
       });
       const texto = response.choices[0].message.content;
       const limpio = texto.replace(/```json|```/g, "").trim();
