@@ -1,4 +1,5 @@
-// Uses native fetch (Node 18+)
+const Groq = require("groq-sdk");
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
@@ -143,34 +144,18 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  const models = [
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "qwen/qwen3-30b-a3b:free",
-    "google/gemma-3-27b-it:free",
-  ];
-
-  for (const model of models) {
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.3,
-          max_tokens: 4500,
-        }),
-      });
-      const result = await response.json();
-      if (!result.choices || !result.choices[0]) continue;
-      const texto = result.choices[0].message.content;
-      const limpio = texto.replace(/```json|```/g, "").trim();
-      const data = JSON.parse(limpio);
-      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
-    } catch (e) { continue; }
+  try {
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 4500,
+    });
+    const texto = response.choices[0].message.content;
+    const limpio = texto.replace(/```json|```/g, "").trim();
+    const data = JSON.parse(limpio);
+    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
+  } catch (error) {
+    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
-  return { statusCode: 500, body: JSON.stringify({ error: "Todos los modelos están ocupados. Intenta en unos segundos." }) };
 };
