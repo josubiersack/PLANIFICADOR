@@ -17,10 +17,30 @@ const TIEMPOS_CLASE = [
   { valor: "40", label: "40 minutos", inicio: "10 MIN", desarrollo: "20 MIN", cierre: "10 MIN" },
 ];
 
+const CATALOGO_NEE = [
+  { nombre: "INDACOCHEA ZAMBRANO CRISTHIAN JOSUE", curso: "8VO EGB A", diagnostico: "HIPERACTIVIDAD", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "IGLESIAS LOOR SANTIAGO DAER", curso: "8VO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "OZAETA MARCILLO MIGUEL ANGEL", curso: "8VO EGB A", diagnostico: "TDAH", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "MENDOZA CEVALLOS DANNA KIARELY", curso: "8VO EGB B", diagnostico: "TRASTORNO DE DÉFICIT DE ATENCIÓN", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "MACIAS ZAMBRANO CRISTHOPER RAFAEL", curso: "8VO EGB B", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 2" },
+  { nombre: "INTRIAGO ARAGUNDI LIAM JAMES", curso: "8VO EGB B", diagnostico: "DIFICULTADES EN LA CONCENTRACIÓN", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "MEDRANDA BRAVO CARLA RAFAELA", curso: "9NO EGB A", diagnostico: "DISCAPACIDAD INTELECTUAL", tipo: "Permanente", grado: "Grado 3" },
+  { nombre: "MORALES RIVERA MIKAEL ALEJANDRO", curso: "9NO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "VELEZ VERA ISAAC GABRIEL", curso: "10MO EGB", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "OCHOA MERO JAIRO JONAYKER", curso: "10MO EGB", diagnostico: "TRASTORNOS DE HABILIDADES ESCOLARES", tipo: "Permanente", grado: "Grado 2" },
+  { nombre: "MENDOZA MERO MAHELY ANALIA", curso: "10MO EGB B", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "CHICA LOPEZ DANNA PAMELA", curso: "1ERO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "CEDEÑO BAZURTO ALEXI JAVIER", curso: "3ERO BGU", diagnostico: "DISCAPACIDAD INTELECTUAL LEVE", tipo: "Permanente", grado: "Grado 3" },
+  { nombre: "ZAMBRANO ZAMBRANO NAYELI LISBEIDY", curso: "2DO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "MERO PARRALES JOSE HERNAN", curso: "2DO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "CALISPA ALCIVAR JORGE ALEXANDER", curso: "3ERO BGU", diagnostico: "APRENDIZAJE LENTO", tipo: "Transitoria", grado: "Grado 2" },
+  { nombre: "MACIAS VILLAVICENCIO ADRIANO ISAIAS", curso: "", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 2" },
+];
+
 const diaVacio = (tiempo = "40") => {
   const t = TIEMPOS_CLASE.find(tc => tc.valor === tiempo) || TIEMPOS_CLASE[1];
   return {
-    horaInicio: "", horaFin: "",
+    horaInicio: "", horaFin: "", detalles: "",
     inicio:    { contenido:"", actividades:"", duracion:t.inicio, recursos:"", tecnica:"", instrumento:"" },
     desarrollo:{ contenido:"", actividades:"", duracion:t.desarrollo, recursos:"", tecnica:"", instrumento:"" },
     cierre:    { contenido:"", actividades:"", duracion:t.cierre, recursos:"", tecnica:"", instrumento:"" },
@@ -177,7 +197,7 @@ function FormularioUEPA() {
       const resp = await fetch("/.netlify/functions/generate-plan-uepa", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel}),
+        body:JSON.stringify({asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel, detallesPorDia: pd.diasSel.reduce((acc, dia) => { acc[dia] = pd.dias[dia]?.detalles || ""; return acc; }, {})}),
       });
       const data = await resp.json();
       if (data.dias) {
@@ -728,6 +748,12 @@ function FormularioUEPA() {
                   </select>
                 </div>
               </div>
+              <div style={{marginBottom:"0.75rem"}}>
+                <label style={{fontSize:"0.82rem",fontWeight:600,color:"#4a5568",display:"block",marginBottom:"0.3rem"}}>📋 Detalles de la clase <span style={{fontWeight:400,color:"#a0aec0"}}>(describe qué harás: explicación, ejercicios, página del libro, etc.)</span></label>
+                <textarea value={pd.dias[dia]?.detalles||""} onChange={e=>updateDiaCampo(dia,"detalles",e.target.value)}
+                  placeholder="Ej: Se explicará la definición del plano cartesiano, se realizarán ejercicios de ubicación de puntos y se trabajará en la página 18 del libro."
+                  style={{width:"100%",minHeight:"60px",border:"1.5px solid #e2e8f0",borderRadius:"8px",padding:"0.5rem",fontSize:"0.85rem",resize:"vertical",fontFamily:"inherit",background:"white"}}/>
+              </div>
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.82rem"}}>
                   <thead>
@@ -816,16 +842,33 @@ function FormularioUEPA() {
             </div>
           </div>
 
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0",gap:"0.75rem",flexWrap:"wrap"}}>
             <h3 style={{color:"#1a365d",fontSize:"1rem"}}>Estudiantes con NEE</h3>
-            <button onClick={addEst} style={{padding:"0.5rem 1rem",background:"#c53030",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600}}>
-              + Agregar estudiante
-            </button>
+            <div style={{display:"flex",gap:"0.5rem",alignItems:"center",flexWrap:"wrap"}}>
+              <select id="catalogo-nee-select" style={{padding:"0.5rem",border:"1.5px solid #e2e8f0",borderRadius:"8px",fontSize:"0.85rem",minWidth:"260px"}}>
+                <option value="">— Seleccionar estudiante registrado —</option>
+                {CATALOGO_NEE.map((e,i)=><option key={i} value={i}>{e.nombre} ({e.curso || "Sin curso"}) — {e.diagnostico}</option>)}
+              </select>
+              <button onClick={()=>{
+                const sel = document.getElementById("catalogo-nee-select");
+                const idx = sel.value;
+                if (idx === "") { alert("Selecciona un estudiante de la lista."); return; }
+                const cat = CATALOGO_NEE[parseInt(idx)];
+                const nuevo = { ...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado };
+                setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, nuevo]}));
+                sel.value = "";
+              }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
+                ✚ Agregar seleccionado
+              </button>
+              <button onClick={addEst} style={{padding:"0.5rem 1rem",background:"#c53030",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
+                + Agregar manual
+              </button>
+            </div>
           </div>
 
           {nee.estudiantes.length===0&&(
             <div style={{textAlign:"center",color:"#718096",padding:"2rem",background:"#f7fafc",borderRadius:"8px",border:"1.5px dashed #e2e8f0"}}>
-              Haz clic en "+ Agregar estudiante" para comenzar
+              Selecciona un estudiante de la lista o haz clic en "+ Agregar manual" para comenzar
             </div>
           )}
 

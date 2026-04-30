@@ -4,7 +4,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
 
-  const { asignatura, curso, semana, dias, tema, tiempo, diagnostico, tipo, grado, esNEE } = JSON.parse(event.body);
+  const { asignatura, curso, semana, dias, tema, tiempo, diagnostico, tipo, grado, esNEE, detallesPorDia } = JSON.parse(event.body);
 
   const duraciones = {
     "35": { inicio: "10 MIN", desarrollo: "15 MIN", cierre: "10 MIN" },
@@ -35,6 +35,9 @@ Genera contenido ADAPTADO para un estudiante NEE con las siguientes característ
 
 IMPORTANTE: Las actividades deben estar ADAPTADAS al diagnóstico del estudiante. 
 Usa estrategias diferenciadas, materiales concretos, instrucciones simplificadas según corresponda.
+
+REGLA OBLIGATORIA: El campo "contenido" de CADA fase (inicio, desarrollo, cierre) debe tener MÍNIMO 5 líneas descriptivas y detalladas. Escribe párrafos completos que expliquen con profundidad qué se hará, cómo se hará, qué materiales se usarán y cómo se adapta al diagnóstico del estudiante. NO escribas frases cortas.
+
 ${temas.length > 1 ? 'Usa el tema correspondiente para cada día en orden.' : ''}
 Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
 
@@ -43,24 +46,24 @@ Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
     ${dias.map((dia, idx) => `"${dia}": {
       "hora": "",
       "inicio": {
-        "contenido": "contenido adaptado sobre ${temas[idx] || temas[0] || tema}",
-        "actividades": "actividad de inicio adaptada al diagnóstico",
+        "contenido": "Escribe aquí mínimo 5 líneas detalladas sobre el contenido adaptado de ${temas[idx] || temas[0] || tema} para la fase de inicio, explicando paso a paso qué se hará y cómo se adapta",
+        "actividades": "actividad de inicio adaptada al diagnóstico con descripción completa",
         "duracion": "${dur.inicio}",
-        "recursos": "recursos accesibles",
+        "recursos": "recursos accesibles detallados",
         "tecnica": "técnica inclusiva",
         "instrumento": "instrumento adaptado"
       },
       "desarrollo": {
-        "contenido": "contenido adaptado sobre ${temas[idx] || temas[0] || tema}",
-        "actividades": "actividad de desarrollo adaptada",
+        "contenido": "Escribe aquí mínimo 5 líneas detalladas sobre el contenido adaptado de ${temas[idx] || temas[0] || tema} para la fase de desarrollo, describiendo ejercicios, explicaciones y actividades paso a paso",
+        "actividades": "actividad de desarrollo adaptada con descripción completa",
         "duracion": "${dur.desarrollo}",
-        "recursos": "material concreto / visual",
+        "recursos": "material concreto / visual detallado",
         "tecnica": "técnica diferenciada",
         "instrumento": "guía adaptada"
       },
       "cierre": {
-        "contenido": "contenido adaptado sobre ${temas[idx] || temas[0] || tema}",
-        "actividades": "actividad de cierre adaptada",
+        "contenido": "Escribe aquí mínimo 5 líneas detalladas sobre el contenido adaptado de ${temas[idx] || temas[0] || tema} para la fase de cierre, explicando la retroalimentación y consolidación",
+        "actividades": "actividad de cierre adaptada con descripción completa",
         "duracion": "${dur.cierre}",
         "recursos": "recursos accesibles",
         "tecnica": "retroalimentación personalizada",
@@ -70,7 +73,7 @@ Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
   }
 }
 
-IMPORTANTE: Responde SOLO el JSON. Contenido ADAPTADO de ${asignatura} para nivel ${curso}, considerando el diagnóstico ${diagnostico || "del estudiante"}.${temas.length > 1 ? ' Usa los temas proporcionados para cada día en orden.' : ''}
+IMPORTANTE: Responde SOLO el JSON. Contenido ADAPTADO de ${asignatura} para nivel ${curso}, considerando el diagnóstico ${diagnostico || "del estudiante"}. Cada campo "contenido" DEBE tener mínimo 5 líneas descriptivas.${temas.length > 1 ? ' Usa los temas proporcionados para cada día en orden.' : ''}
 `;
   } else {
     // Parsear temas separados por guión
@@ -79,50 +82,70 @@ IMPORTANTE: Responde SOLO el JSON. Contenido ADAPTADO de ${asignatura} para nive
       ? `Los temas de la semana son (en orden, uno por día):\n${temas.map((t, i) => `  ${i+1}. ${t}`).join("\n")}\nAsigna cada tema al día correspondiente en orden. Si hay más días que temas, repite o profundiza el último tema. Si hay más temas que días, agrupa los sobrantes en el último día.`
       : "Genera temas apropiados de la asignatura para cada día.";
 
+    // Construir información de detalles por día
+    const detallesInfo = detallesPorDia ? dias.map(dia => {
+      const det = detallesPorDia[dia];
+      return det ? `  - ${dia}: ${det}` : null;
+    }).filter(Boolean).join("\n") : "";
+
     prompt = `
 Eres un docente experto de la Unidad Educativa Particular Americano de Manta, Ecuador.
 Genera contenido para un Plan Diario semanal de ${asignatura} para el curso ${curso}, semana ${semana}.
 
 ${temasInfo}
-
+${detallesInfo ? `\nDETALLES ESPECÍFICOS del docente sobre lo que se hará en cada clase (usa esta información para generar contenido más preciso y contextualizado):\n${detallesInfo}\n` : ""}
 Tiempo de clase: ${tiempo || 40} minutos por día.
 
-Para cada día indicado, genera contenido educativo real, específico y detallado.
+Para cada día indicado, genera contenido educativo real, específico y MUY DETALLADO.
+
+REGLA OBLIGATORIA: El campo "contenido" de CADA fase (inicio, desarrollo, cierre) DEBE tener MÍNIMO 5 líneas descriptivas y detalladas. Escribe párrafos completos que expliquen con profundidad:
+- Qué tema específico se abordará
+- Cómo se desarrollará la explicación del docente
+- Qué ejercicios o actividades realizarán los estudiantes
+- Si el docente indicó detalles (como trabajar en una página del libro, hacer ejercicios específicos, etc.), incorpóralos con contexto ampliado
+- Cómo se consolidará el aprendizaje
+
+NO escribas frases cortas ni genéricas. Cada "contenido" debe ser un párrafo descriptivo y rico en contexto pedagógico.
+
 Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
 
 {
   "dias": {
-    ${dias.map((dia, idx) => `"${dia}": {
+    ${dias.map((dia, idx) => {
+      const detalle = detallesPorDia && detallesPorDia[dia] ? detallesPorDia[dia] : "";
+      const temaDia = temas[idx] || temas[0] || "tema del día";
+      return `"${dia}": {
       "hora": "",
       "inicio": {
-        "contenido": "${temas[idx] || 'tema del día'}",
-        "actividades": "actividad de inicio detallada sobre ${temas[idx] || 'el tema'}",
+        "contenido": "Escribe mínimo 5 líneas detalladas sobre ${temaDia}${detalle ? '. El docente indica: ' + detalle : ''}. Describe paso a paso el contenido de inicio",
+        "actividades": "actividad de inicio detallada y específica sobre ${temaDia}",
         "duracion": "${dur.inicio}",
-        "recursos": "recursos específicos",
+        "recursos": "recursos específicos y detallados",
         "tecnica": "técnica de evaluación",
         "instrumento": "instrumento de evaluación"
       },
       "desarrollo": {
-        "contenido": "${temas[idx] || 'tema del día'}",
-        "actividades": "actividad de desarrollo detallada sobre ${temas[idx] || 'el tema'}",
+        "contenido": "Escribe mínimo 5 líneas detalladas sobre ${temaDia}${detalle ? '. El docente indica: ' + detalle : ''}. Describe ejercicios, explicaciones y trabajo en clase paso a paso",
+        "actividades": "actividad de desarrollo detallada y específica sobre ${temaDia}",
         "duracion": "${dur.desarrollo}",
-        "recursos": "recursos específicos",
+        "recursos": "recursos específicos y detallados",
         "tecnica": "técnica de evaluación",
         "instrumento": "instrumento de evaluación"
       },
       "cierre": {
-        "contenido": "${temas[idx] || 'tema del día'}",
-        "actividades": "actividad de cierre detallada sobre ${temas[idx] || 'el tema'}",
+        "contenido": "Escribe mínimo 5 líneas detalladas sobre ${temaDia}${detalle ? '. El docente indica: ' + detalle : ''}. Describe la consolidación y cierre de la clase",
+        "actividades": "actividad de cierre detallada y específica sobre ${temaDia}",
         "duracion": "${dur.cierre}",
         "recursos": "recursos específicos",
         "tecnica": "técnica de evaluación",
         "instrumento": "instrumento de evaluación"
       }
-    }`).join(",\n")}
+    }`;
+    }).join(",\n")}
   }
 }
 
-IMPORTANTE: Responde SOLO el JSON. Contenido real de ${asignatura} para nivel ${curso}. ${temas.length > 0 ? 'Usa los temas proporcionados para cada día en orden.' : ''}
+IMPORTANTE: Responde SOLO el JSON. Contenido real de ${asignatura} para nivel ${curso}. CADA campo "contenido" DEBE tener MÍNIMO 5 líneas descriptivas con contexto pedagógico completo. ${temas.length > 0 ? 'Usa los temas proporcionados para cada día en orden.' : ''}
 `;
   }
 
@@ -131,7 +154,7 @@ IMPORTANTE: Responde SOLO el JSON. Contenido real de ${asignatura} para nivel ${
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 3000,
+      max_tokens: 4500,
     });
     const texto = response.choices[0].message.content;
     const limpio = texto.replace(/```json|```/g, "").trim();
