@@ -146,7 +146,7 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
   const models = [
     "meta-llama/llama-3.3-70b-instruct:free",
     "qwen/qwen3-30b-a3b:free",
-    "google/gemini-2.0-flash-exp:free",
+    "google/gemma-3-27b-it:free",
   ];
 
   for (const model of models) {
