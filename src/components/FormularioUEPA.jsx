@@ -255,11 +255,22 @@ function FormularioUEPA() {
       });
       const data = await resp.json();
       if (data.dias) {
+        const temas = nee.tema ? nee.tema.split("-").map(t => t.trim()).filter(t => t) : [];
         setNee(prev => ({
           ...prev, estudiantes: prev.estudiantes.map(e => {
             if (e.id !== estId) return e;
             const nd = {...e.dias};
-            e.diasSel.forEach(dia => { if(data.dias[dia]) nd[dia]={...nd[dia],...data.dias[dia]}; });
+            e.diasSel.forEach((dia, idx) => {
+              if(data.dias[dia]) {
+                nd[dia]={...nd[dia],...data.dias[dia]};
+                const temaDia = temas[idx] || temas[0] || nee.tema;
+                if (temaDia) {
+                  nd[dia].inicio = {...nd[dia].inicio, contenido: temaDia};
+                  nd[dia].desarrollo = {...nd[dia].desarrollo, contenido: temaDia};
+                  nd[dia].cierre = {...nd[dia].cierre, contenido: temaDia};
+                }
+              }
+            });
             return {...e, dias:nd};
           })
         }));
