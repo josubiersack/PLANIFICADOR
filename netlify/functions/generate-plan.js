@@ -106,20 +106,20 @@ IMPORTANTE:
 - El tiempo total de actividades debe sumar exactamente ${tiempo} minutos
 `;
   const modelos = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "gemma2-9b-it",
-    "mixtral-8x7b-32768",
+    { id: "llama-3.3-70b-versatile", maxTk: 3000 },
+    { id: "mixtral-8x7b-32768", maxTk: 3000 },
+    { id: "gemma2-9b-it", maxTk: 2500 },
+    { id: "llama-3.1-8b-instant", maxTk: 2000 },
   ];
 
   let lastError = null;
   for (const modelo of modelos) {
     try {
       const response = await groq.chat.completions.create({
-        model: modelo,
+        model: modelo.id,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
-        max_tokens: 3000,
+        max_tokens: modelo.maxTk,
       });
       const texto = response.choices[0].message.content;
       const limpio = texto.replace(/```json|```/g, "").trim();
@@ -127,10 +127,10 @@ IMPORTANTE:
       return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(planificacion) };
     } catch (error) {
       const status = error?.status || error?.statusCode || 500;
-      lastError = `${modelo}: ${error?.error?.message || error?.message || String(error)}`;
-      if (status === 429) continue;
+      lastError = `${modelo.id}: ${error?.error?.message || error?.message || String(error)}`;
+      if (status === 429 || status === 413) continue;
       return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${lastError}` }) };
     }
   }
-  return { statusCode: 429, body: JSON.stringify({ error: "Todos los modelos alcanzaron su límite diario. Intenta en 1-2 horas. Último error: " + lastError }) };
+  return { statusCode: 429, body: JSON.stringify({ error: "Todos los modelos agotados. Intenta en 1-2 horas. " + lastError }) };
 };
