@@ -152,12 +152,10 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  // Modelos de respaldo — solo modelos vigentes en Groq 2026
+  // Modelos de respaldo
   const modelos = [
-    { id: "meta-llama/llama-3.3-70b-versatile", maxTk: 4500 },
-    { id: "meta-llama/llama-4-scout-17b-16e-instruct", maxTk: 4500 },
-    { id: "qwen/qwen3-32b", maxTk: 4000 },
-    { id: "meta-llama/llama-3.1-8b-instant", maxTk: 2500 },
+    { id: "llama-3.3-70b-versatile", maxTk: 4500 },
+    { id: "llama-3.1-8b-instant", maxTk: 2500 },
   ];
 
   let lastError = null;

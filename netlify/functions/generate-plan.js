@@ -106,10 +106,8 @@ IMPORTANTE:
 - El tiempo total de actividades debe sumar exactamente ${tiempo} minutos
 `;
   const modelos = [
-    { id: "meta-llama/llama-3.3-70b-versatile", maxTk: 3000 },
-    { id: "meta-llama/llama-4-scout-17b-16e-instruct", maxTk: 3000 },
-    { id: "qwen/qwen3-32b", maxTk: 2500 },
-    { id: "meta-llama/llama-3.1-8b-instant", maxTk: 2000 },
+    { id: "llama-3.3-70b-versatile", maxTk: 3000 },
+    { id: "llama-3.1-8b-instant", maxTk: 2000 },
   ];
 
   let lastError = null;
