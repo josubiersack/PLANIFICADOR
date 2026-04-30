@@ -152,25 +152,41 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  try {
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 4500,
-    });
-    const texto = response.choices[0].message.content;
-    const limpio = texto.replace(/```json|```/g, "").trim();
-    let data;
+  // Modelos de respaldo: si uno alcanza el rate limit, intenta el siguiente
+  const modelos = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "gemma2-9b-it",
+    "mixtral-8x7b-32768",
+  ];
+
+  let lastError = null;
+  for (const modelo of modelos) {
     try {
-      data = JSON.parse(limpio);
-    } catch (parseErr) {
-      return { statusCode: 500, body: JSON.stringify({ error: "La IA no devolvió JSON válido. Respuesta: " + limpio.substring(0, 200) }) };
+      const response = await groq.chat.completions.create({
+        model: modelo,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 4500,
+      });
+      const texto = response.choices[0].message.content;
+      const limpio = texto.replace(/```json|```/g, "").trim();
+      let data;
+      try {
+        data = JSON.parse(limpio);
+      } catch (parseErr) {
+        lastError = "La IA no devolvió JSON válido con modelo " + modelo;
+        continue; // Intentar siguiente modelo
+      }
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
+    } catch (error) {
+      const status = error?.status || error?.statusCode || 500;
+      lastError = `${modelo}: ${error?.error?.message || error?.message || String(error)}`;
+      if (status === 429) continue; // Rate limit, intentar siguiente modelo
+      // Otro error, no seguir intentando
+      return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${lastError}` }) };
     }
-    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) };
-  } catch (error) {
-    const msg = error?.error?.message || error?.message || String(error);
-    const status = error?.status || error?.statusCode || 500;
-    return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${msg}` }) };
   }
+  // Todos los modelos agotados
+  return { statusCode: 429, body: JSON.stringify({ error: "Todos los modelos alcanzaron su límite diario. Intenta en 1-2 horas. Último error: " + lastError }) };
 };

@@ -105,21 +105,32 @@ IMPORTANTE:
 - Usa lenguaje claro para docentes ecuatorianos
 - El tiempo total de actividades debe sumar exactamente ${tiempo} minutos
 `;
+  const modelos = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "gemma2-9b-it",
+    "mixtral-8x7b-32768",
+  ];
 
-  try {
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 3000,
-    });
-    const texto = response.choices[0].message.content;
-    const limpio = texto.replace(/```json|```/g, "").trim();
-    const planificacion = JSON.parse(limpio);
-    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(planificacion) };
-  } catch (error) {
-    const msg = error?.error?.message || error?.message || String(error);
-    const status = error?.status || error?.statusCode || 500;
-    return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${msg}` }) };
+  let lastError = null;
+  for (const modelo of modelos) {
+    try {
+      const response = await groq.chat.completions.create({
+        model: modelo,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 3000,
+      });
+      const texto = response.choices[0].message.content;
+      const limpio = texto.replace(/```json|```/g, "").trim();
+      const planificacion = JSON.parse(limpio);
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(planificacion) };
+    } catch (error) {
+      const status = error?.status || error?.statusCode || 500;
+      lastError = `${modelo}: ${error?.error?.message || error?.message || String(error)}`;
+      if (status === 429) continue;
+      return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${lastError}` }) };
+    }
   }
+  return { statusCode: 429, body: JSON.stringify({ error: "Todos los modelos alcanzaron su límite diario. Intenta en 1-2 horas. Último error: " + lastError }) };
 };
