@@ -152,10 +152,10 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 `;
   }
 
-  // Modelos de respaldo ordenados por capacidad de contexto
+  // Modelos de respaldo ordenados por capacidad
   const modelos = [
     { id: "llama-3.3-70b-versatile", maxTk: 4500 },
-    { id: "mixtral-8x7b-32768", maxTk: 4000 },
+    { id: "llama3-70b-8192", maxTk: 4000 },
     { id: "gemma2-9b-it", maxTk: 3500 },
     { id: "llama-3.1-8b-instant", maxTk: 2500 },
   ];
@@ -182,7 +182,7 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
     } catch (error) {
       const status = error?.status || error?.statusCode || 500;
       lastError = `${modelo.id}: ${error?.error?.message || error?.message || String(error)}`;
-      if (status === 429 || status === 413) continue; // Rate limit o request muy grande, siguiente modelo
+      if (status === 429 || status === 413 || status === 400) continue;
       return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${lastError}` }) };
     }
   }

@@ -107,7 +107,7 @@ IMPORTANTE:
 `;
   const modelos = [
     { id: "llama-3.3-70b-versatile", maxTk: 3000 },
-    { id: "mixtral-8x7b-32768", maxTk: 3000 },
+    { id: "llama3-70b-8192", maxTk: 3000 },
     { id: "gemma2-9b-it", maxTk: 2500 },
     { id: "llama-3.1-8b-instant", maxTk: 2000 },
   ];
@@ -128,7 +128,7 @@ IMPORTANTE:
     } catch (error) {
       const status = error?.status || error?.statusCode || 500;
       lastError = `${modelo.id}: ${error?.error?.message || error?.message || String(error)}`;
-      if (status === 429 || status === 413) continue;
+      if (status === 429 || status === 413 || status === 400) continue;
       return { statusCode: status, body: JSON.stringify({ error: `Error Groq (${status}): ${lastError}` }) };
     }
   }
