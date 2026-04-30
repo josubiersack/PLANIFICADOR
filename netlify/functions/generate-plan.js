@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+// Native fetch (Node 18+)
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -114,6 +114,9 @@ IMPORTANTE:
       }),
     });
     const data = await response.json();
+    if (!data.choices || !data.choices[0]) {
+      return { statusCode: 500, body: JSON.stringify({ error: "OpenRouter error: " + JSON.stringify(data) }) };
+    }
     const texto = data.choices[0].message.content;
     const limpio = texto.replace(/```json|```/g, "").trim();
     const planificacion = JSON.parse(limpio);

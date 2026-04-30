@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+// Uses native fetch (Node 18+)
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Method Not Allowed" };
@@ -158,6 +158,9 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
       }),
     });
     const result = await response.json();
+    if (!result.choices || !result.choices[0]) {
+      return { statusCode: 500, body: JSON.stringify({ error: "OpenRouter error: " + JSON.stringify(result) }) };
+    }
     const texto = result.choices[0].message.content;
     const limpio = texto.replace(/```json|```/g, "").trim();
     const data = JSON.parse(limpio);
