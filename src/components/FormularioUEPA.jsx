@@ -542,19 +542,13 @@ function FormularioUEPA() {
       setC(r,2,est.nombre,{...nf,bold:true}); setC(r,4,"CURSO",hf,colLt);
       ws.mergeCells(r,5,r,7); setC(r,5,nee.curso,nf); r++;
 
+      const nivelTexto = est.nivelCurricular==="Adaptación curricular" ? `Adaptación curricular: ${est.nivelCurricularDetalle||""}` : "Al que pertenece";
       setC(r,1,"Diagnóstico:",hf,colLt); setC(r,2,est.diagnostico,nf);
       setC(r,3,"Tipo:",hf,colLt); ws.mergeCells(r,4,r,5);
       setC(r,4,`Perm: ${est.tipo==="Permanente"?"X":""}  Trans: ${est.tipo==="Transitoria"?"X":""}`,nf);
       setC(r,6,est.grado,{...nf,bold:true}); setC(r,7,"X",nf); ws.getCell(r,7).alignment={horizontal:"center"}; r++;
       if (esG3) { setC(r,1,"Asociada a discapacidad:",hf,colLt); ws.mergeCells(r,2,r,7); setC(r,2,est.asociada,nf); r++; }
-      // Nivel curricular
-      setC(r,1,"Nivel curricular:",hf,colLt); ws.mergeCells(r,2,r,3);
-      setC(r,2,est.nivelCurricular||"Al que pertenece",nf);
-      if (est.nivelCurricular==="Adaptación curricular") {
-        ws.mergeCells(r,4,r,7); setC(r,4,est.nivelCurricularDetalle||"",{...nf,bold:true});
-      } else {
-        ws.mergeCells(r,4,r,7); setC(r,4,"",nf);
-      }
+      setC(r,1,"Nivel curricular:",hf,colLt); ws.mergeCells(r,2,r,7); setC(r,2,nivelTexto,{...nf,bold:true});
       r++; r++;
 
       // Tablas por día
@@ -680,10 +674,11 @@ function FormularioUEPA() {
       <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Docente:</td><td colspan="5" style="border:1px solid #000;padding:4px;">${nee.docente}</td></tr>
       <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Curso:</td><td style="border:1px solid #000;padding:4px;">${nee.curso}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Tiempo:</td><td style="border:1px solid #000;padding:4px;">${tiempoMin} MIN</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Fecha:</td><td style="border:1px solid #000;padding:4px;">${nee.semana}</td></tr>
     </table>`;
+    const nivelTexto = est.nivelCurricular==='Adaptación curricular' ? `Adaptación curricular: ${est.nivelCurricularDetalle||''}` : 'Al que pertenece';
     html += `<table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
       <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">ESTUDIANTE</td><td colspan="2" style="border:1px solid #000;padding:4px;font-weight:bold;">${est.nombre}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">CURSO</td><td colspan="2" style="border:1px solid #000;padding:4px;">${nee.curso}</td></tr>
       <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Diagnóstico:</td><td style="border:1px solid #000;padding:4px;">${est.diagnostico}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Tipo:</td><td style="border:1px solid #000;padding:4px;">${est.tipo}</td><td style="border:1px solid #000;padding:4px;font-weight:bold;">${est.grado}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Nivel curricular</td></tr>
-      <tr><td colspan="2" style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">${est.nivelCurricular||'Al que pertenece'}</td><td colspan="4" style="border:1px solid #000;padding:4px;font-weight:bold;">${est.nivelCurricular==='Adaptación curricular' ? est.nivelCurricularDetalle||'' : ''}</td></tr>
+      <tr><td colspan="6" style="border:1px solid #000;padding:4px;font-weight:bold;">${nivelTexto}</td></tr>
     </table>`;
     const ordenDias = DIAS_SEMANA.filter(d => est.diasSel.includes(d));
     for (const dia of ordenDias) {
