@@ -50,6 +50,7 @@ const diaVacio = (tiempo = "40") => {
 const estVacio = () => ({
   id: Date.now() + Math.random(),
   nombre:"", diagnostico:"", tipo:"Transitoria", grado:"Grado 2", asociada:"No asociada a discapacidad",
+  nivelCurricular:"Al que pertenece", nivelCurricularDetalle:"",
   diasSel: [], dias: {},
 });
 
@@ -546,7 +547,15 @@ function FormularioUEPA() {
       setC(r,4,`Perm: ${est.tipo==="Permanente"?"X":""}  Trans: ${est.tipo==="Transitoria"?"X":""}`,nf);
       setC(r,6,est.grado,{...nf,bold:true}); setC(r,7,"X",nf); ws.getCell(r,7).alignment={horizontal:"center"}; r++;
       if (esG3) { setC(r,1,"Asociada a discapacidad:",hf,colLt); ws.mergeCells(r,2,r,7); setC(r,2,est.asociada,nf); r++; }
-      r++;
+      // Nivel curricular
+      setC(r,1,"Nivel curricular:",hf,colLt); ws.mergeCells(r,2,r,3);
+      setC(r,2,est.nivelCurricular||"Al que pertenece",nf);
+      if (est.nivelCurricular==="Adaptación curricular") {
+        ws.mergeCells(r,4,r,7); setC(r,4,est.nivelCurricularDetalle||"",{...nf,bold:true});
+      } else {
+        ws.mergeCells(r,4,r,7); setC(r,4,"",nf);
+      }
+      r++; r++;
 
       // Tablas por día
       const ordenDias = DIAS_SEMANA.filter(d => est.diasSel.includes(d));
@@ -672,8 +681,9 @@ function FormularioUEPA() {
       <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Curso:</td><td style="border:1px solid #000;padding:4px;">${nee.curso}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Tiempo:</td><td style="border:1px solid #000;padding:4px;">${tiempoMin} MIN</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Fecha:</td><td style="border:1px solid #000;padding:4px;">${nee.semana}</td></tr>
     </table>`;
     html += `<table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
-      <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">ESTUDIANTE</td><td colspan="2" style="border:1px solid #000;padding:4px;font-weight:bold;">${est.nombre}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">CURSO</td><td style="border:1px solid #000;padding:4px;">${nee.curso}</td></tr>
-      <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Diagnóstico:</td><td style="border:1px solid #000;padding:4px;">${est.diagnostico}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Tipo:</td><td style="border:1px solid #000;padding:4px;">${est.tipo}</td><td style="border:1px solid #000;padding:4px;font-weight:bold;">${est.grado}</td></tr>
+      <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">ESTUDIANTE</td><td colspan="2" style="border:1px solid #000;padding:4px;font-weight:bold;">${est.nombre}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">CURSO</td><td colspan="2" style="border:1px solid #000;padding:4px;">${nee.curso}</td></tr>
+      <tr><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Diagnóstico:</td><td style="border:1px solid #000;padding:4px;">${est.diagnostico}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Tipo:</td><td style="border:1px solid #000;padding:4px;">${est.tipo}</td><td style="border:1px solid #000;padding:4px;font-weight:bold;">${est.grado}</td><td style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">Nivel curricular</td></tr>
+      <tr><td colspan="2" style="border:1px solid #000;font-weight:bold;padding:4px;background:${colLt};">${est.nivelCurricular||'Al que pertenece'}</td><td colspan="4" style="border:1px solid #000;padding:4px;font-weight:bold;">${est.nivelCurricular==='Adaptación curricular' ? est.nivelCurricularDetalle||'' : ''}</td></tr>
     </table>`;
     const ordenDias = DIAS_SEMANA.filter(d => est.diasSel.includes(d));
     for (const dia of ordenDias) {
@@ -995,6 +1005,19 @@ function FormularioUEPA() {
                       <option>Asociada a discapacidad</option>
                       <option>No asociada a discapacidad</option>
                     </select>
+                  </div>
+                )}
+              </div>
+              <div className="fila-tres" style={{marginTop:"0.5rem"}}>
+                <div className="campo"><label>Nivel curricular</label>
+                  <select value={est.nivelCurricular||"Al que pertenece"} onChange={e=>updateEst(est.id,"nivelCurricular",e.target.value)}>
+                    <option>Al que pertenece</option>
+                    <option>Adaptación curricular</option>
+                  </select>
+                </div>
+                {est.nivelCurricular==="Adaptación curricular"&&(
+                  <div className="campo"><label>Nivel de adaptación</label>
+                    <input value={est.nivelCurricularDetalle||""} onChange={e=>updateEst(est.id,"nivelCurricularDetalle",e.target.value)} placeholder="Ej: 7MO EGB"/>
                   </div>
                 )}
               </div>
