@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, BorderStyle, AlignmentType, ImageRun, VerticalAlign
 } from "docx";
 import ExcelJS from "exceljs";
 import html2pdf from "html2pdf.js";
+import { autoseleccionar, getDuracionPorHora, esMateriaLenguaje, horaLabel } from "../horario";
 
 const HORAS_CLASE = ["1RA","2DA","3RA","4TA","5TA","6TA","7MA","8VA"];
 
@@ -184,10 +185,59 @@ function FormularioUEPA() {
     ...prev, dias:{...prev.dias, [dia]:{...prev.dias[dia], [campo]:val}}
   }));
 
+  // Autoselección de días y horas según el horario real del docente
+  const aplicarAutoseleccionPD = useCallback((curso, materia) => {
+    if (!curso || !materia || esMateriaLenguaje(materia)) return;
+    const { dias, horas, clases } = autoseleccionar(curso, materia);
+    if (dias.length === 0) return;
+    setPd(prev => {
+      const tiempo = String(getDuracionPorHora(horas[0]));
+      const tc = TIEMPOS_CLASE.find(x => x.valor === tiempo) || TIEMPOS_CLASE[1];
+      const nuevosDias = {...prev.dias};
+      dias.forEach(dia => {
+        const hs = clases.filter(c => c.dia === dia).map(c => c.hora).sort((a, b) => a - b);
+        const base = nuevosDias[dia] || diaVacio(tiempo);
+        nuevosDias[dia] = {
+          ...base,
+          horaInicio: horaLabel(hs[0]),
+          horaFin: hs.length > 1 ? horaLabel(hs[hs.length - 1]) : "",
+          inicio: {...base.inicio, duracion: tc.inicio},
+          desarrollo: {...base.desarrollo, duracion: tc.desarrollo},
+          cierre: {...base.cierre, duracion: tc.cierre},
+        };
+      });
+      return {...prev, tiempo, diasSel: dias, dias: nuevosDias};
+    });
+  }, []);
+
+  useEffect(() => {
+    aplicarAutoseleccionPD(pd.curso, pd.asignatura);
+  }, [pd.curso, pd.asignatura, aplicarAutoseleccionPD]);
+
   const updateFase = (dia, fase, campo, val) => setPd(prev => ({
     ...prev,
     dias:{...prev.dias, [dia]:{...prev.dias[dia], [fase]:{...prev.dias[dia][fase], [campo]:val}}}
   }));
+
+  // Rellena campos vacíos para que ninguna celda quede en blanco
+  const rellenarFase = (fase, temaDefault) => {
+    const f = fase || {};
+    return {
+      contenido: f.contenido || temaDefault || "Tema de la clase",
+      actividades: f.actividades || "El docente explica el tema con ejemplos, los estudiantes practican ejercicios y resuelven dudas paso a paso.",
+      duracion: f.duracion || "10 MIN",
+      recursos: f.recursos || "Pizarra, marcadores, cuaderno, libro de texto",
+      tecnica: f.tecnica || "Observación directa",
+      instrumento: f.instrumento || "Lista de cotejo",
+    };
+  };
+
+  const sanitizarDia = (diaData, temaDefault) => ({
+    ...diaData,
+    inicio: rellenarFase(diaData?.inicio, temaDefault),
+    desarrollo: rellenarFase(diaData?.desarrollo, temaDefault),
+    cierre: rellenarFase(diaData?.cierre, temaDefault),
+  });
 
   const generarIA = async () => {
     if (!pd.asignatura || !pd.curso || pd.diasSel.length===0) {
@@ -214,7 +264,7 @@ function FormularioUEPA() {
       if (data.dias) {
         setPd(prev => {
           const nd = {...prev.dias};
-          prev.diasSel.forEach(dia => { if(data.dias[dia]) nd[dia]={...nd[dia],...data.dias[dia]}; });
+          prev.diasSel.forEach(dia => { if(data.dias[dia]) nd[dia]={...nd[dia], ...sanitizarDia(data.dias[dia], prev.tema || "Tema de la clase")}; });
           return {...prev, dias:nd};
         });
       }
@@ -241,7 +291,10 @@ function FormularioUEPA() {
     setNee(prev => {
       const nombresExistentes = prev.estudiantes.map(e => e.nombre);
       const nuevos = encontrados.filter(e => !nombresExistentes.includes(e.nombre))
-        .map(cat => ({...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado}));
+        .map(cat => aplicarAutoseleccionEst(
+          {...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado},
+          prev.curso, prev.asignatura, prev.fechaLunes
+        ));
       if (nuevos.length === 0) { alert("Todos los estudiantes de ese curso ya están agregados."); return prev; }
       return {...prev, estudiantes:[...prev.estudiantes, ...nuevos]};
     });
@@ -249,6 +302,39 @@ function FormularioUEPA() {
   const updateEst = (id, campo, val) => setNee(prev => ({
     ...prev, estudiantes:prev.estudiantes.map(e=>e.id===id?{...e,[campo]:val}:e)
   }));
+
+  // Autoselecciona días y horas de un estudiante según curso y materia del horario
+  const aplicarAutoseleccionEst = (est, curso, materia, fechaLunes) => {
+    if (!est || !curso || !materia || esMateriaLenguaje(materia)) return est;
+    const { dias, horas, clases } = autoseleccionar(curso, materia);
+    if (dias.length === 0) return est;
+    const tiempo = String(getDuracionPorHora(horas[0]));
+    const tc = TIEMPOS_CLASE.find(x => x.valor === tiempo) || TIEMPOS_CLASE[1];
+    const nuevosDias = {...est.dias};
+    dias.forEach(dia => {
+      const hs = clases.filter(c => c.dia === dia).map(c => c.hora).sort((a, b) => a - b);
+      const base = nuevosDias[dia] || diaEstVacio(tiempo);
+      nuevosDias[dia] = {
+        ...base,
+        horaInicio: horaLabel(hs[0]),
+        horaFin: hs.length > 1 ? horaLabel(hs[hs.length - 1]) : "",
+        fecha: base.fecha || calcFechaDia(fechaLunes, dia),
+        inicio: {...base.inicio, duracion: tc.inicio},
+        desarrollo: {...base.desarrollo, duracion: tc.desarrollo},
+        cierre: {...base.cierre, duracion: tc.cierre},
+      };
+    });
+    return {...est, diasSel: dias, dias: nuevosDias};
+  };
+
+  // Reaplicar autoselección a todos los estudiantes cuando cambia curso/asignatura NEE
+  useEffect(() => {
+    if (!nee.asignatura || !nee.curso || nee.estudiantes.length === 0) return;
+    setNee(prev => ({
+      ...prev,
+      estudiantes: prev.estudiantes.map(est => aplicarAutoseleccionEst(est, prev.curso, prev.asignatura, prev.fechaLunes)),
+    }));
+  }, [nee.asignatura, nee.curso]);
 
   // Calcular fecha automática a partir del lunes
   const calcFechaDia = (fechaLunes, dia) => {
@@ -349,13 +435,11 @@ function FormularioUEPA() {
             const nd = {...e.dias};
             e.diasSel.forEach((dia, idx) => {
               if(data.dias[dia]) {
-                nd[dia]={...nd[dia],...data.dias[dia]};
-                const temaDia = temas[idx] || temas[0] || nee.tema;
-                if (temaDia) {
-                  nd[dia].inicio = {...nd[dia].inicio, contenido: temaDia};
-                  nd[dia].desarrollo = {...nd[dia].desarrollo, contenido: temaDia};
-                  nd[dia].cierre = {...nd[dia].cierre, contenido: temaDia};
-                }
+                const temaDia = temas[idx] || temas[0] || nee.tema || "Tema de la clase";
+                nd[dia]={...nd[dia], ...sanitizarDia(data.dias[dia], temaDia)};
+                nd[dia].inicio = {...nd[dia].inicio, contenido: temaDia};
+                nd[dia].desarrollo = {...nd[dia].desarrollo, contenido: temaDia};
+                nd[dia].cierre = {...nd[dia].cierre, contenido: temaDia};
               }
             });
             return {...e, dias:nd};
@@ -821,6 +905,16 @@ function FormularioUEPA() {
                 </label>
               ))}
             </div>
+            {pd.curso && pd.asignatura && !esMateriaLenguaje(pd.asignatura) && (
+              <p style={{fontSize:"0.75rem",color:"#2b6cb0",marginTop:"0.5rem"}}>
+                ✅ Días y horas autoseleccionados según tu horario real (puedes modificarlos manualmente)
+              </p>
+            )}
+            {pd.curso && pd.asignatura && esMateriaLenguaje(pd.asignatura) && (
+              <p style={{fontSize:"0.75rem",color:"#718096",marginTop:"0.5rem"}}>
+                ℹ️ Lenguaje no está en el horario automático: selecciona días y horas manualmente
+              </p>
+            )}
           </div>
 
           {DIAS_SEMANA.filter(d=>pd.diasSel.includes(d)).map(dia=>(
@@ -955,7 +1049,7 @@ function FormularioUEPA() {
                 if (idx === "") { alert("Selecciona un estudiante de la lista."); return; }
                 const cat = CATALOGO_NEE[parseInt(idx)];
                 const nuevo = { ...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado };
-                setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, nuevo]}));
+                setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, aplicarAutoseleccionEst(nuevo, prev.curso, prev.asignatura, prev.fechaLunes)]}));
                 sel.value = "";
               }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
                 ✚ Agregar seleccionado
