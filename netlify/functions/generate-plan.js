@@ -103,8 +103,8 @@ IMPORTANTE:
 - El tiempo total de actividades debe sumar exactamente ${tiempo} minutos
 `;
   const modelos = [
-    { id: "qwen/qwen-2.5-72b-instruct", maxTk: 3000 },
-    { id: "qwen/qwen-2.5-7b-instruct", maxTk: 2000 },
+    { id: "qwen/qwen3-30b-a3b", maxTk: 2000 },
+    { id: "qwen/qwen-2.5-7b-instruct", maxTk: 1500 },
   ];
 
   let lastError = null;

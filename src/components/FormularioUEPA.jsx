@@ -201,9 +201,14 @@ function FormularioUEPA() {
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel, detallesPorDia: pd.diasSel.reduce((acc, dia) => { acc[dia] = pd.dias[dia]?.detalles || ""; return acc; }, {})}),
       });
-      const data = await resp.json();
+      const raw = await resp.text();
       if (!resp.ok) {
-        alert("Error del servidor: " + (data.error || JSON.stringify(data)));
+        try { const data = JSON.parse(raw); alert("Error del servidor: " + (data.error || JSON.stringify(data))); } catch { alert("Error del servidor (HTTP " + resp.status + "): la función no respondió correctamente. Verifica que la clave de API esté configurada en Netlify."); }
+        return;
+      }
+      let data;
+      try { data = JSON.parse(raw); } catch {
+        alert("Error: la función devolvió HTML en vez de JSON. Si estás en localhost:3000, usa 'netlify dev' en vez de 'npm start'.");
         return;
       }
       if (data.dias) {
@@ -326,9 +331,14 @@ function FormularioUEPA() {
           esNEE: true, dias: est.diasSel,
         }),
       });
-      const data = await resp.json();
+      const raw = await resp.text();
       if (!resp.ok) {
-        alert("Error del servidor: " + (data.error || JSON.stringify(data)));
+        try { const data = JSON.parse(raw); alert("Error del servidor: " + (data.error || JSON.stringify(data))); } catch { alert("Error del servidor (HTTP " + resp.status + "): la función no respondió correctamente. Verifica que la clave de API esté configurada en Netlify."); }
+        return;
+      }
+      let data;
+      try { data = JSON.parse(raw); } catch {
+        alert("Error: la función devolvió HTML en vez de JSON. Si estás en localhost:3000, usa 'netlify dev' en vez de 'npm start'.");
         return;
       }
       if (data.dias) {

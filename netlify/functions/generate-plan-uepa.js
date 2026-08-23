@@ -41,7 +41,7 @@ NO generes contenido genérico. El contenido DEBE ser ÚNICO para el diagnóstic
 
 REGLAS DE FORMATO:
 - El campo "contenido" debe contener ÚNICAMENTE el nombre del tema (ej: "El plano cartesiano", "Ecuaciones lineales"). Solo el tema, nada más.
-- El campo "actividades" es donde va la EXPLICACIÓN DETALLADA de lo que se hará en clase. MÍNIMO 4 líneas descriptivas explicando paso a paso qué hará el docente, qué hará el estudiante, qué materiales usará, cómo se adapta al diagnóstico, etc.
+- El campo "actividades" es donde va la EXPLICACIÓN de lo que se hará en clase: 3-4 frases concretas y detalladas que expliquen paso a paso qué hará el docente, qué hará el estudiante, qué materiales usará, cómo se adapta al diagnóstico, etc.
 
 ${temas.length > 1 ? 'Usa el tema correspondiente para cada día en orden.' : ''}
 Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
@@ -78,7 +78,7 @@ Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
   }
 }
 
-IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema. "actividades" = explicación detallada de mínimo 4 líneas. Contenido ADAPTADO de ${asignatura} para ${curso}.${temas.length > 1 ? ' Usa los temas proporcionados en orden.' : ''}
+IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema. "actividades" = 3-4 frases concretas de lo que se hará en clase. Contenido ADAPTADO de ${asignatura} para ${curso}.${temas.length > 1 ? ' Usa los temas proporcionados en orden.' : ''}
 `;
   } else {
     const temas = tema ? tema.split("-").map(t => t.trim()).filter(t => t) : [];
@@ -101,7 +101,7 @@ Tiempo de clase: ${tiempo || 40} minutos por día.
 
 REGLAS DE FORMATO OBLIGATORIAS:
 1. El campo "contenido" debe contener ÚNICAMENTE el nombre del tema de esa fase (ej: "El plano cartesiano", "Ecuaciones lineales"). Solo el tema corto, NO explicaciones.
-2. El campo "actividades" es donde va la EXPLICACIÓN DETALLADA de lo que se realizará en la clase. MÍNIMO 4 líneas descriptivas que expliquen:
+2. El campo "actividades" es donde va la EXPLICACIÓN de lo que se realizará en la clase: 3-4 frases concretas y detalladas que expliquen:
    - Qué hará el docente (explicar, demostrar, guiar)
    - Qué harán los estudiantes (ejercicios, trabajo en libro, práctica)
    - Si el docente indicó detalles específicos (página del libro, tipo de ejercicio), incorpóralos
@@ -145,14 +145,14 @@ Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
   }
 }
 
-IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto). "actividades" = explicación detallada de mínimo 4 líneas de lo que se hará en clase. Contenido real de ${asignatura} para ${curso}. ${temas.length > 0 ? 'Usa los temas proporcionados en orden.' : ''}
+IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto). "actividades" = 3-4 frases concretas de lo que se hará en clase. Contenido real de ${asignatura} para ${curso}. ${temas.length > 0 ? 'Usa los temas proporcionados en orden.' : ''}
 `;
   }
 
   // Modelos de respaldo
   const modelos = [
-    { id: "qwen/qwen-2.5-72b-instruct", maxTk: 4500 },
-    { id: "qwen/qwen-2.5-7b-instruct", maxTk: 2500 },
+    { id: "qwen/qwen3-30b-a3b", maxTk: 2500 },
+    { id: "qwen/qwen-2.5-7b-instruct", maxTk: 2000 },
   ];
 
   let lastError = null;

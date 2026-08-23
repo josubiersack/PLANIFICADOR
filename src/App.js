@@ -20,7 +20,12 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
       });
-      const data = await respuesta.json();
+      const raw = await respuesta.text();
+      let data;
+      try { data = JSON.parse(raw); } catch {
+        setError("La función devolvió HTML en vez de JSON. Si estás en localhost:3000, usa 'netlify dev' en vez de 'npm start'.");
+        return;
+      }
       if (data.error) setError(data.error);
       else setPlanificacion(data);
     } catch (err) {
