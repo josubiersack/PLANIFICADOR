@@ -1,6 +1,6 @@
 export const HORAS_CLASE = ["1RA","2DA","3RA","4TA","5TA","6TA","7MA","8VA"];
 
-export const DIAS_ORDEN = ["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"];
+export const DIAS_ORDEN = ["LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES"];
 
 export const HORARIO_COMPLETO = [
   // LUNES
@@ -20,14 +20,14 @@ export const HORARIO_COMPLETO = [
   { dia: "MARTES", hora: 5, curso: "PRIMERO BGU", materia: "MATEMÁTICAS", duracion: 40 },
   { dia: "MARTES", hora: 6, curso: "PRIMERO BGU", materia: "PPE", duracion: 35 },
   { dia: "MARTES", hora: 7, curso: "TERCERO BGU", materia: "MATEMÁTICAS", duracion: 35 },
-  // MIERCOLES
-  { dia: "MIERCOLES", hora: 1, curso: "SEGUNDO BGU", materia: "PPE", duracion: 40 },
-  { dia: "MIERCOLES", hora: 2, curso: "NOVENO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
-  { dia: "MIERCOLES", hora: 3, curso: "NOVENO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
-  { dia: "MIERCOLES", hora: 4, curso: "OCTAVO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
-  { dia: "MIERCOLES", hora: 5, curso: "PRIMERO BGU", materia: "MATEMÁTICAS", duracion: 40 },
-  { dia: "MIERCOLES", hora: 6, curso: "SEGUNDO BGU", materia: "LABORATORIO", duracion: 35 },
-  { dia: "MIERCOLES", hora: 7, curso: "TERCERO BGU", materia: "MATEMÁTICAS", duracion: 35 },
+  // MIÉRCOLES
+  { dia: "MIÉRCOLES", hora: 1, curso: "SEGUNDO BGU", materia: "PPE", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 2, curso: "NOVENO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 3, curso: "NOVENO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 4, curso: "OCTAVO EGB B", materia: "MATEMÁTICAS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 5, curso: "PRIMERO BGU", materia: "MATEMÁTICAS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 6, curso: "SEGUNDO BGU", materia: "LABORATORIO", duracion: 35 },
+  { dia: "MIÉRCOLES", hora: 7, curso: "TERCERO BGU", materia: "MATEMÁTICAS", duracion: 35 },
   // JUEVES
   { dia: "JUEVES", hora: 1, curso: "SEGUNDO BGU", materia: "PPE", duracion: 40 },
   { dia: "JUEVES", hora: 2, curso: "PRIMERO BGU", materia: "MATEMÁTICAS", duracion: 40 },
@@ -98,7 +98,10 @@ export function horaLabel(hora) {
 
 export function autoseleccionar(curso, materia) {
   const clases = obtenerClases(curso, materia);
-  if (clases.length === 0) return { dias: [], horas: [], clases: [] };
+  if (clases.length === 0) {
+    console.log("🔍 autoseleccionar (sin coincidencias):", { curso, materia, normalizado: normalizarCurso(curso) + " / " + normalizarMateria(materia) });
+    return { dias: [], horas: [], clases: [] };
+  }
   const diasSet = new Set();
   const horasSet = new Set();
   clases.forEach(({ dia, hora }) => {
@@ -107,5 +110,6 @@ export function autoseleccionar(curso, materia) {
   });
   const dias = DIAS_ORDEN.filter(d => diasSet.has(d));
   const horas = Array.from(horasSet).sort((a, b) => a - b);
+  console.log("🔍 autoseleccionar:", { cursoOriginal: curso, materiaOriginal: materia, cursoNormalizado: normalizarCurso(curso), materiaNormalizada: normalizarMateria(materia), clasesEncontradas: clases.length, dias, horas });
   return { dias, horas, clases };
 }
