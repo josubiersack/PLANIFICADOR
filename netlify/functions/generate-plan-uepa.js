@@ -154,7 +154,7 @@ IMPORTANTE: Responde SOLO el JSON. "contenido" = SOLO el nombre del tema (corto)
 
   // Modelos de respaldo
   const modelos = [
-    { id: "meta-llama/llama-4-scout-17b-16e-instruct", maxTk: 4500 },
+    { id: "llama3-70b-8192", maxTk: 4500 },
     { id: "llama-3.1-8b-instant", maxTk: 2500 },
   ];
 
