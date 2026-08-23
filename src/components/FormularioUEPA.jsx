@@ -19,23 +19,23 @@ const TIEMPOS_CLASE = [
 ];
 
 const CATALOGO_NEE = [
-  { nombre: "INDACOCHEA ZAMBRANO CRISTHIAN JOSUE", curso: "8VO EGB A", diagnostico: "HIPERACTIVIDAD", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "IGLESIAS LOOR SANTIAGO DAER", curso: "8VO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "OZAETA MARCILLO MIGUEL ANGEL", curso: "8VO EGB A", diagnostico: "TDAH", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "MENDOZA CEVALLOS DANNA KIARELY", curso: "8VO EGB B", diagnostico: "TRASTORNO DE DÉFICIT DE ATENCIÓN", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "MACIAS ZAMBRANO CRISTHOPER RAFAEL", curso: "8VO EGB B", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 2" },
-  { nombre: "INTRIAGO ARAGUNDI LIAM JAMES", curso: "8VO EGB B", diagnostico: "DIFICULTADES EN LA CONCENTRACIÓN", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "MEDRANDA BRAVO CARLA RAFAELA", curso: "9NO EGB A", diagnostico: "DISCAPACIDAD INTELECTUAL", tipo: "Permanente", grado: "Grado 3" },
-  { nombre: "MORALES RIVERA MIKAEL ALEJANDRO", curso: "9NO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "VELEZ VERA ISAAC GABRIEL", curso: "10MO EGB", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "OCHOA MERO JAIRO JONAYKER", curso: "10MO EGB", diagnostico: "TRASTORNOS DE HABILIDADES ESCOLARES", tipo: "Permanente", grado: "Grado 2" },
-  { nombre: "MENDOZA MERO MAHELY ANALIA", curso: "10MO EGB B", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "CHICA LOPEZ DANNA PAMELA", curso: "1ERO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "CEDEÑO BAZURTO ALEXI JAVIER", curso: "3ERO BGU", diagnostico: "DISCAPACIDAD INTELECTUAL LEVE", tipo: "Permanente", grado: "Grado 3" },
-  { nombre: "ZAMBRANO ZAMBRANO NAYELI LISBEIDY", curso: "2DO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "MERO PARRALES JOSE HERNAN", curso: "2DO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "CALISPA ALCIVAR JORGE ALEXANDER", curso: "3ERO BGU", diagnostico: "APRENDIZAJE LENTO", tipo: "Transitoria", grado: "Grado 2" },
-  { nombre: "MACIAS VILLAVICENCIO ADRIANO ISAIAS", curso: "", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 2" },
+  { nombre: "INDACOCHEA ZAMBRANO CRISTHIAN JOSUE", curso: "OCTAVO EGB A", diagnostico: "HIPERACTIVIDAD", tipo: "Transitoria", grado: "Grado 1", materias: ["MATEMÁTICAS"] },
+  { nombre: "IGLESIAS LOOR SANTIAGO DAER", curso: "OCTAVO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 1", materias: ["MATEMÁTICAS"] },
+  { nombre: "OZAETA MARCILLO MIGUEL ANGEL", curso: "OCTAVO EGB B", diagnostico: "TDAH", tipo: "Transitoria", grado: "Grado 2", materias: ["MATEMÁTICAS", "ROBÓTICA"] },
+  { nombre: "MENDOZA CEVALLOS DANNA KIARELY", curso: "OCTAVO EGB B", diagnostico: "TRASTORNO DE DÉFICIT DE ATENCIÓN", tipo: "Transitoria", grado: "Grado 2", materias: ["MATEMÁTICAS"] },
+  { nombre: "MACIAS ZAMBRANO CRISTHOPER RAFAEL", curso: "OCTAVO EGB B", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 3", materias: ["MATEMÁTICAS", "ROBÓTICA"] },
+  { nombre: "INTRIAGO ARAGUNDI LIAM JAMES", curso: "OCTAVO EGB B", diagnostico: "DIFICULTADES EN LA CONCENTRACIÓN", tipo: "Transitoria", grado: "Grado 2", materias: ["MATEMÁTICAS"] },
+  { nombre: "MEDRANDA BRAVO CARLA RAFAELA", curso: "NOVENO EGB A", diagnostico: "DISCAPACIDAD INTELECTUAL", tipo: "Permanente", grado: "Grado 3", materias: ["MATEMÁTICAS"] },
+  { nombre: "MORALES RIVERA MIKAEL ALEJANDRO", curso: "NOVENO EGB A", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 1", materias: ["MATEMÁTICAS"] },
+  { nombre: "VELEZ VERA ISAAC GABRIEL", curso: "DÉCIMO EGB", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 2", materias: [] },
+  { nombre: "OCHOA MERO JAIRO JONAYKER", curso: "DÉCIMO EGB", diagnostico: "TRASTORNOS DE HABILIDADES ESCOLARES", tipo: "Permanente", grado: "Grado 2", materias: [] },
+  { nombre: "MENDOZA MERO MAHELY ANALIA", curso: "DÉCIMO EGB B", diagnostico: "EN PROCESO", tipo: "Transitoria", grado: "Grado 1", materias: [] },
+  { nombre: "CHICA LOPEZ DANNA PAMELA", curso: "PRIMERO BGU", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 3", materias: ["MATEMÁTICAS"] },
+  { nombre: "CEDEÑO BAZURTO ALEXI JAVIER", curso: "PRIMERO BGU", diagnostico: "DISCAPACIDAD INTELECTUAL LEVE", tipo: "Permanente", grado: "Grado 3", materias: ["MATEMÁTICAS", "LABORATORIO"] },
+  { nombre: "ZAMBRANO ZAMBRANO NAYELI LISBEIDY", curso: "SEGUNDO BGU", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 3", materias: ["MATEMÁTICAS"] },
+  { nombre: "MERO PARRALES JOSE HERNAN", curso: "SEGUNDO BGU", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 3", materias: ["MATEMÁTICAS"] },
+  { nombre: "CALISPA ALCIVAR JORGE ALEXANDER", curso: "TERCERO BGU", diagnostico: "APRENDIZAJE LENTO", tipo: "Transitoria", grado: "Grado 2", materias: ["MATEMÁTICAS"] },
+  { nombre: "MACIAS VILLAVICENCIO ADRIANO ISAIAS", curso: "TERCERO BGU", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 3", materias: ["MATEMÁTICAS", "LABORATORIO"] },
 ];
 
 const diaVacio = (tiempo = "40") => {
@@ -50,7 +50,7 @@ const diaVacio = (tiempo = "40") => {
 
 const estVacio = () => ({
   id: Date.now() + Math.random(),
-  nombre:"", diagnostico:"", tipo:"Transitoria", grado:"Grado 2", asociada:"No asociada a discapacidad",
+  nombre:"", curso:"", materias:[], diagnostico:"", tipo:"Transitoria", grado:"Grado 2", asociada:"No asociada a discapacidad",
   nivelCurricular:"Al que pertenece", nivelCurricularDetalle:"",
   diasSel: [], dias: {},
 });
@@ -279,20 +279,13 @@ function FormularioUEPA() {
   // Agregar TODOS los estudiantes de un curso del catálogo
   const addEstsPorCurso = (cursoFiltro) => {
     if (!cursoFiltro) { alert("Selecciona un curso primero."); return; }
-    const cursoMap = {
-      "OCTAVO EGB A": "8VO EGB A", "OCTAVO EGB B": "8VO EGB B",
-      "NOVENO EGB A": "9NO EGB A", "NOVENO EGB B": "9NO EGB B",
-      "DÉCIMO EGB A": "10MO EGB", "DÉCIMO EGB B": "10MO EGB B",
-      "PRIMERO BGU": "1ERO BGU", "SEGUNDO BGU": "2DO BGU", "TERCERO BGU": "3ERO BGU",
-    };
-    const cursoCorto = cursoMap[cursoFiltro] || cursoFiltro;
-    const encontrados = CATALOGO_NEE.filter(e => e.curso === cursoCorto);
+    const encontrados = CATALOGO_NEE.filter(e => e.curso === cursoFiltro || (cursoFiltro === "DÉCIMO EGB A" && e.curso === "DÉCIMO EGB"));
     if (encontrados.length === 0) { alert(`No hay estudiantes NEE registrados para ${cursoFiltro}.`); return; }
     setNee(prev => {
       const nombresExistentes = prev.estudiantes.map(e => e.nombre);
       const nuevos = encontrados.filter(e => !nombresExistentes.includes(e.nombre))
         .map(cat => aplicarAutoseleccionEst(
-          {...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado},
+          {...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado},
           prev.curso, prev.asignatura, prev.fechaLunes
         ));
       if (nuevos.length === 0) { alert("Todos los estudiantes de ese curso ya están agregados."); return prev; }
@@ -303,9 +296,13 @@ function FormularioUEPA() {
     ...prev, estudiantes:prev.estudiantes.map(e=>e.id===id?{...e,[campo]:val}:e)
   }));
 
-  // Autoselecciona días y horas de un estudiante según curso y materia del horario
-  const aplicarAutoseleccionEst = (est, curso, materia, fechaLunes) => {
-    if (!est || !curso || !materia || esMateriaLenguaje(materia)) return est;
+  // Autoselecciona días y horas de un estudiante según SU curso y materia del horario
+  const aplicarAutoseleccionEst = (est, cursoForm, materiaForm, fechaLunes) => {
+    if (!est) return est;
+    if (est.materias && est.materias.length === 0) return est;
+    const curso = est.curso || cursoForm;
+    const materia = (est.materias && est.materias[0]) || materiaForm;
+    if (!curso || !materia || esMateriaLenguaje(materia)) return est;
     const { dias, horas, clases } = autoseleccionar(curso, materia);
     if (dias.length === 0) return est;
     const tiempo = String(getDuracionPorHora(horas[0]));
@@ -1048,7 +1045,7 @@ function FormularioUEPA() {
                 const idx = sel.value;
                 if (idx === "") { alert("Selecciona un estudiante de la lista."); return; }
                 const cat = CATALOGO_NEE[parseInt(idx)];
-                const nuevo = { ...estVacio(), nombre: cat.nombre, diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado };
+                const nuevo = { ...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado };
                 setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, aplicarAutoseleccionEst(nuevo, prev.curso, prev.asignatura, prev.fechaLunes)]}));
                 sel.value = "";
               }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
@@ -1076,9 +1073,14 @@ function FormularioUEPA() {
             return (
             <div key={est.id} style={{background:cardColor.bg,border:`1.5px solid ${cardColor.border}`,borderRadius:"10px",padding:"1.25rem",marginBottom:"1.5rem"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1rem"}}>
-                <h4 style={{color:cardColor.accent}}>Estudiante {idx+1} — {est.grado}</h4>
+                <h4 style={{color:cardColor.accent}}>Estudiante {idx+1} — {est.grado}{est.curso ? ` — ${est.curso}` : ""}</h4>
                 <button onClick={()=>removeEst(est.id)} style={{background:"none",border:"none",color:"#c53030",cursor:"pointer",fontSize:"1.2rem"}}>✕</button>
               </div>
+              {est.materias && est.materias.length === 0 && (
+                <p style={{background:"#fff5f5",color:"#c53030",border:"1px solid #feb2b2",borderRadius:"8px",padding:"0.5rem 0.75rem",fontSize:"0.8rem",fontWeight:600,marginBottom:"0.75rem"}}>
+                  ⚠️ Este estudiante no tiene clases programadas con este docente.
+                </p>
+              )}
               <div className="fila-dos">
                 <div className="campo"><label>Nombre completo</label>
                   <input value={est.nombre} onChange={e=>updateEst(est.id,"nombre",e.target.value)} placeholder="Apellidos y nombres"/>
