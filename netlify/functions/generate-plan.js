@@ -1,13 +1,11 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey && !process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: "No hay ninguna clave de API configurada. Agrega GEMINI_API_KEY, GROQ_API_KEY u OPENROUTER_API_KEY en las variables de entorno de Netlify." }) };
+  if (!apiKey && !process.env.GROQ_API_KEY) {
+    return { statusCode: 500, body: JSON.stringify({ error: "No hay ninguna clave de API configurada. Agrega GROQ_API_KEY u OPENROUTER_API_KEY en las variables de entorno de Netlify." }) };
   }
 
 
@@ -109,81 +107,46 @@ IMPORTANTE:
   const devolver = (parsed) => ({ statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed) });
   const parsear = (texto) => JSON.parse(texto.replace(/```json|```/g, "").trim());
 
-  // 1) GEMINI (gratuito, sin tarjeta) — GEMINI_API_KEY
-  if (process.env.GEMINI_API_KEY) {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const geminiModelos = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"];
-    for (const id of geminiModelos) {
-      try {
-        const model = genAI.getGenerativeModel({
-          model: id,
-          generationConfig: { temperature: 0.3, maxOutputTokens: 2500, responseMimeType: "application/json" },
-        });
-        const result = await model.generateContent(prompt);
-        return devolver(parsear(result.response.text()));
-      } catch (error) {
-        lastError = `Gemini ${id}: ${error?.message || String(error)}`;
-      }
-    }
-  }
-
-  // 2) GROQ (gratuito con límites) — GROQ_API_KEY
+  // 1) GROQ (gratuito) — GROQ_API_KEY
   if (process.env.GROQ_API_KEY) {
-    const groqModelos = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
-    for (const id of groqModelos) {
-      try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model: id, messages: [{ role: "user", content: prompt }], temperature: 0.3, max_tokens: 2500, response_format: { type: "json_object" } }),
-        });
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          lastError = `Groq ${id}: ${errBody?.error?.message || res.statusText}`;
-          continue;
-        }
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "openai/gpt-oss-120b", messages: [{ role: "user", content: prompt }], temperature: 0.3, max_tokens: 5000, response_format: { type: "json_object" } }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        lastError = `Groq: ${errBody?.error?.message || res.statusText}`;
+      } else {
         const data = await res.json();
         return devolver(parsear(data.choices[0].message.content));
-      } catch (error) {
-        lastError = `Groq ${id}: ${error?.message || String(error)}`;
       }
+    } catch (error) {
+      lastError = `Groq: ${error?.message || String(error)}`;
     }
   }
 
-  // 3) OPENROUTER (respaldo final) — OPENROUTER_API_KEY
+  // 2) OPENROUTER Qwen (respaldo) — OPENROUTER_API_KEY
   if (apiKey) {
-    const modelos = [
-      { id: "deepseek/deepseek-v4-flash", maxTk: 2500 },
-      { id: "qwen/qwen3-30b-a3b", maxTk: 2000 },
-      { id: "qwen/qwen-2.5-7b-instruct", maxTk: 1500 },
-    ];
-    for (const modelo of modelos) {
-      try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: modelo.id,
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.3,
-            max_tokens: modelo.maxTk,
-            response_format: { type: "json_object" },
-          }),
-        });
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          lastError = `${modelo.id}: ${errBody?.error?.message || res.statusText}`;
-          if (res.status === 429 || res.status === 413 || res.status === 400) continue;
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "qwen/qwen3-30b-a3b", messages: [{ role: "user", content: prompt }], temperature: 0.3, max_tokens: 6000, response_format: { type: "json_object" } }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        lastError = `Qwen: ${errBody?.error?.message || res.statusText}`;
+        if (res.status !== 429 && res.status !== 413 && res.status !== 400) {
           return { statusCode: res.status, body: JSON.stringify({ error: `Error OpenRouter (${res.status}): ${lastError}` }) };
         }
+      } else {
         const data = await res.json();
         return devolver(parsear(data.choices[0].message.content));
-      } catch (error) {
-        lastError = `${modelo.id}: ${error?.message || String(error)}`;
       }
+    } catch (error) {
+      lastError = `Qwen: ${error?.message || String(error)}`;
     }
   }
   return { statusCode: 429, body: JSON.stringify({ error: "Todos los proveedores agotados. Intenta más tarde. " + lastError }) };

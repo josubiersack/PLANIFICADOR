@@ -239,6 +239,55 @@ function FormularioUEPA() {
     cierre: rellenarFase(diaData?.cierre, temaDefault),
   });
 
+  // Llamada a la IA con diferenciación de errores y validación de días
+  const llamarIA = async (payload) => {
+    const resp = await fetch("/.netlify/functions/generate-plan-uepa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const raw = await resp.text();
+    if (!resp.ok) {
+      if (resp.status === 401 || resp.status === 403) {
+        return { ok: false, reintentar: false, mensaje: "Error de autenticación de la API. Verifica que las API Keys estén configuradas correctamente en Netlify." };
+      }
+      if (resp.status === 502 || resp.status === 504) {
+        return { ok: false, reintentar: true, mensaje: "El servidor tardó demasiado en responder. Intenta generar la planificación nuevamente." };
+      }
+      let detalle = "Respuesta no válida del servidor.";
+      try { const d = JSON.parse(raw); detalle = d.error || JSON.stringify(d); } catch {}
+      if (resp.status === 429) {
+        if (detalle.includes("faltan días")) {
+          return { ok: false, reintentar: true, mensaje: "La IA no generó todos los días solicitados. Intenta nuevamente." };
+        }
+        return { ok: false, reintentar: true, mensaje: "El servidor de IA está saturado en este momento. Intenta generar la planificación nuevamente." };
+      }
+      return { ok: false, reintentar: false, mensaje: `Error del servidor (HTTP ${resp.status}): ${detalle}` };
+    }
+    let data;
+    try { data = JSON.parse(raw); } catch {
+      return { ok: false, reintentar: true, mensaje: "El servidor devolvió una respuesta no válida. Intenta generar la planificación nuevamente." };
+    }
+    const solicitados = payload.dias || [];
+    const presentes = data.dias ? solicitados.filter(d => data.dias[d]) : [];
+    if (!data.dias || Object.keys(data.dias).length === 0) {
+      return { ok: false, reintentar: true, mensaje: "La IA no generó correctamente los días solicitados. Intenta nuevamente." };
+    }
+    if (solicitados.length > 0 && presentes.length < solicitados.length) {
+      return { ok: false, reintentar: true, mensaje: "La IA no generó todos los días solicitados. Intenta nuevamente." };
+    }
+    return { ok: true, reintentar: false, data };
+  };
+
+  // Máximo 1 reintento controlado ante fallos recuperables
+  const generarConReintento = async (payload) => {
+    let resultado = await llamarIA(payload);
+    if (!resultado.ok && resultado.reintentar) {
+      resultado = await llamarIA(payload);
+    }
+    return resultado;
+  };
+
   const generarIA = async () => {
     if (!pd.asignatura || !pd.curso || pd.diasSel.length===0) {
       alert("Completa asignatura, curso y selecciona al menos un día.");
@@ -246,21 +295,15 @@ function FormularioUEPA() {
     }
     setCargando(true);
     try {
-      const resp = await fetch("/.netlify/functions/generate-plan-uepa", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel, detallesPorDia: pd.diasSel.reduce((acc, dia) => { acc[dia] = pd.dias[dia]?.detalles || ""; return acc; }, {})}),
+      const resultado = await generarConReintento({
+        asignatura:pd.asignatura, curso:pd.curso, semana:pd.semana, tema:pd.tema, tiempo:pd.tiempo, dias:pd.diasSel,
+        detallesPorDia: pd.diasSel.reduce((acc, dia) => { acc[dia] = pd.dias[dia]?.detalles || ""; return acc; }, {}),
       });
-      const raw = await resp.text();
-      if (!resp.ok) {
-        try { const data = JSON.parse(raw); alert("Error del servidor: " + (data.error || JSON.stringify(data))); } catch { alert("Error del servidor (HTTP " + resp.status + "): la función no respondió correctamente. Verifica que la clave de API esté configurada en Netlify."); }
+      if (!resultado.ok) {
+        alert(resultado.mensaje);
         return;
       }
-      let data;
-      try { data = JSON.parse(raw); } catch {
-        alert("Error: la función devolvió HTML en vez de JSON. Si estás en localhost:3000, usa 'netlify dev' en vez de 'npm start'.");
-        return;
-      }
+      const data = resultado.data;
       if (data.dias) {
         setPd(prev => {
           const nd = {...prev.dias};
@@ -403,27 +446,18 @@ function FormularioUEPA() {
     if (!est || est.diasSel.length === 0) { alert("Selecciona al menos un día."); return; }
     setCargandoNee(prev => ({...prev, [estId]: true}));
     try {
-      const resp = await fetch("/.netlify/functions/generate-plan-uepa", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          asignatura: nee.asignatura, curso: nee.curso, semana: nee.semana,
-          tema: nee.tema, tiempo: nee.tiempo,
-          diagnostico: est.diagnostico, tipo: est.tipo, grado: est.grado,
-          nombreEstudiante: est.nombre,
-          esNEE: true, dias: est.diasSel,
-        }),
+      const resultado = await generarConReintento({
+        asignatura: nee.asignatura, curso: nee.curso, semana: nee.semana,
+        tema: nee.tema, tiempo: nee.tiempo,
+        diagnostico: est.diagnostico, tipo: est.tipo, grado: est.grado,
+        nombreEstudiante: est.nombre,
+        esNEE: true, dias: est.diasSel,
       });
-      const raw = await resp.text();
-      if (!resp.ok) {
-        try { const data = JSON.parse(raw); alert("Error del servidor: " + (data.error || JSON.stringify(data))); } catch { alert("Error del servidor (HTTP " + resp.status + "): la función no respondió correctamente. Verifica que la clave de API esté configurada en Netlify."); }
+      if (!resultado.ok) {
+        alert(resultado.mensaje);
         return;
       }
-      let data;
-      try { data = JSON.parse(raw); } catch {
-        alert("Error: la función devolvió HTML en vez de JSON. Si estás en localhost:3000, usa 'netlify dev' en vez de 'npm start'.");
-        return;
-      }
+      const data = resultado.data;
       if (data.dias) {
         const temas = nee.tema ? nee.tema.split("-").map(t => t.trim()).filter(t => t) : [];
         setNee(prev => ({
