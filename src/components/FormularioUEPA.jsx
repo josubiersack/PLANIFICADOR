@@ -5,7 +5,7 @@ import {
 } from "docx";
 import ExcelJS from "exceljs";
 import html2pdf from "html2pdf.js";
-import { autoseleccionar, getDuracionPorHora, esMateriaLenguaje, horaLabel } from "../horario";
+import { autoseleccionar, getDuracionPorHora, horaLabel, DOCENTES } from "../horario";
 
 const HORAS_CLASE = ["1RA","2DA","3RA","4TA","5TA","6TA","7MA","8VA"];
 
@@ -16,6 +16,17 @@ const TRIMESTRES = ["PRIMER","SEGUNDO","TERCER"];
 const TIEMPOS_CLASE = [
   { valor: "35", label: "35 minutos", inicio: "10 MIN", desarrollo: "15 MIN", cierre: "10 MIN" },
   { valor: "40", label: "40 minutos", inicio: "10 MIN", desarrollo: "20 MIN", cierre: "10 MIN" },
+];
+
+const CATALOGO_NEE_KEVIN = [
+  { nombre: "OCHOA MERO JAIRO JONAYKER", curso: "DÉCIMO EGB A", diagnostico: "TRASTORNOS DE HABILIDADES ESCOLARES", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "9.º EGB", materias: ["LENGUAJE"] },
+  { nombre: "VELEZ VERA ISAAC GABRIEL", curso: "DÉCIMO EGB A", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "9.º EGB", materias: ["LENGUAJE"] },
+  { nombre: "CHICA LOPEZ DANNA PAMELA", curso: "PRIMERO BGU", diagnostico: "DISLEXIA Y DISCALCULIA", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "10.º EGB", materias: ["LENGUAJE"] },
+  { nombre: "CEDEÑO BAZURTO ALEXI JAVIER", curso: "PRIMERO BGU", diagnostico: "DISCAPACIDAD INTELECTUAL LEVE", tipo: "Permanente", grado: "Grado 3", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "10.º EGB", materias: ["LENGUAJE"] },
+  { nombre: "ZAMBRANO ZAMBRANO NAYELI LISBEIDY", curso: "SEGUNDO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "1.º BGU", materias: ["LENGUAJE"] },
+  { nombre: "MERO PARRALES JOSE HERNAN", curso: "SEGUNDO BGU", diagnostico: "TRASTORNOS DE APRENDIZAJE (DISLEXIA Y DISCALCULIA)", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "1.º BGU", materias: ["LENGUAJE"] },
+  { nombre: "CALISPA ALCIVAR JORGE ALEXANDER", curso: "TERCERO BGU", diagnostico: "APRENDIZAJE LENTO", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "2.º BGU", materias: ["LENGUAJE"] },
+  { nombre: "MACIAS VILLAVICENCIO ADRIANO", curso: "TERCERO BGU", diagnostico: "AUTISMO", tipo: "", grado: "Grado 2", materias: ["LENGUAJE"] },
 ];
 
 const CATALOGO_NEE = [
@@ -37,6 +48,12 @@ const CATALOGO_NEE = [
   { nombre: "CALISPA ALCIVAR JORGE ALEXANDER", curso: "TERCERO BGU", diagnostico: "APRENDIZAJE LENTO", tipo: "Transitoria", grado: "Grado 2", materias: ["MATEMÁTICAS"] },
   { nombre: "MACIAS VILLAVICENCIO ADRIANO ISAIAS", curso: "TERCERO BGU", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 3", materias: ["MATEMÁTICAS", "LABORATORIO"] },
 ];
+
+// Catálogos de estudiantes NEE por docente (independientes entre sí)
+const CATALOGOS_NEE = {
+  "LIC. JOSUÉ CRUZ ZAMBRANO": CATALOGO_NEE,
+  "LIC. KEVIN BARRETO SOLEDISPA": CATALOGO_NEE_KEVIN,
+};
 
 const diaVacio = (tiempo = "40") => {
   const t = TIEMPOS_CLASE.find(tc => tc.valor === tiempo) || TIEMPOS_CLASE[1];
@@ -146,6 +163,7 @@ function FormularioUEPA() {
 
   const [pd, setPd] = useState({
     docente:"LIC. JOSUÉ CRUZ ZAMBRANO",
+    docenteSel:"LIC. JOSUÉ CRUZ ZAMBRANO",
     asignatura:"", curso:"", semana:"", trimestre:"PRIMER",
     tema:"", tiempo:"40",
     diasSel:[], dias:{},
@@ -153,12 +171,32 @@ function FormularioUEPA() {
 
   const [nee, setNee] = useState({
     docente:"LIC. JOSUÉ CRUZ ZAMBRANO",
+    docenteSel:"LIC. JOSUÉ CRUZ ZAMBRANO",
     asignatura:"", curso:"", semana:"",
     tema:"", tiempo:"40", fechaLunes:"",
     estudiantes:[],
   });
   const [cargandoNee, setCargandoNee] = useState({});
   const [cargandoTodosNee, setCargandoTodosNee] = useState(false);
+
+  // Helpers por docente (config centralizada)
+  const configDocente = (sel) => DOCENTES[sel] || DOCENTES["LIC. JOSUÉ CRUZ ZAMBRANO"];
+  const materiasDocente = (sel) => configDocente(sel).materias || [];
+  const cursosDocente = (sel) => configDocente(sel).cursos || [];
+  const horarioKeyDocente = (sel) => configDocente(sel).horario || "JOSUE";
+  const catalogoNeeDocente = (sel) => CATALOGOS_NEE[sel] || CATALOGO_NEE;
+
+  // Cambiar docente en Plan Diario (limpia selección previa para evitar mezclas)
+  const cambiarDocentePD = (docente) => setPd(prev => {
+    if (docente === prev.docenteSel) return prev;
+    return {...prev, docente, docenteSel: docente, asignatura:"", curso:"", tema:"", trimestre:"PRIMER", diasSel:[], dias:{}};
+  });
+
+  // Cambiar docente en NEE (limpia selección y estudiantes para evitar mezclas)
+  const cambiarDocenteNEE = (docente) => setNee(prev => {
+    if (docente === prev.docenteSel) return prev;
+    return {...prev, docente, docenteSel: docente, asignatura:"", curso:"", tema:"", estudiantes:[]};
+  });
 
   const toggleDia = (dia) => setPd(prev => {
     const sel = prev.diasSel.includes(dia)
@@ -185,10 +223,11 @@ function FormularioUEPA() {
     ...prev, dias:{...prev.dias, [dia]:{...prev.dias[dia], [campo]:val}}
   }));
 
-  // Autoselección de días y horas según el horario real del docente
-  const aplicarAutoseleccionPD = useCallback((curso, materia) => {
-    if (!curso || !materia || esMateriaLenguaje(materia)) return;
-    const { dias, horas, clases } = autoseleccionar(curso, materia);
+  // Autoselección de días y horas según el horario real del docente seleccionado
+  const aplicarAutoseleccionPD = useCallback((docenteSel, curso, materia) => {
+    if (!curso || !materia || !docenteSel) return;
+    const horarioKey = horarioKeyDocente(docenteSel);
+    const { dias, horas, clases } = autoseleccionar(curso, materia, horarioKey);
     if (dias.length === 0) return;
     setPd(prev => {
       const tiempo = String(getDuracionPorHora(horas[0]));
@@ -211,8 +250,8 @@ function FormularioUEPA() {
   }, []);
 
   useEffect(() => {
-    aplicarAutoseleccionPD(pd.curso, pd.asignatura);
-  }, [pd.curso, pd.asignatura, aplicarAutoseleccionPD]);
+    aplicarAutoseleccionPD(pd.docenteSel, pd.curso, pd.asignatura);
+  }, [pd.docenteSel, pd.curso, pd.asignatura, aplicarAutoseleccionPD]);
 
   const updateFase = (dia, fase, campo, val) => setPd(prev => ({
     ...prev,
@@ -319,17 +358,19 @@ function FormularioUEPA() {
   const addEst = () => setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, estVacio()]}));
   const removeEst = (id) => setNee(prev => ({...prev, estudiantes:prev.estudiantes.filter(e=>e.id!==id)}));
 
-  // Agregar TODOS los estudiantes de un curso del catálogo
+  // Agregar TODOS los estudiantes de un curso del catálogo (del docente seleccionado)
   const addEstsPorCurso = (cursoFiltro) => {
     if (!cursoFiltro) { alert("Selecciona un curso primero."); return; }
-    const encontrados = CATALOGO_NEE.filter(e => e.curso === cursoFiltro || (cursoFiltro === "DÉCIMO EGB A" && e.curso === "DÉCIMO EGB"));
+    const catalogo = catalogoNeeDocente(nee.docenteSel);
+    const hk = horarioKeyDocente(nee.docenteSel);
+    const encontrados = catalogo.filter(e => e.curso === cursoFiltro || (cursoFiltro === "DÉCIMO EGB A" && e.curso === "DÉCIMO EGB"));
     if (encontrados.length === 0) { alert(`No hay estudiantes NEE registrados para ${cursoFiltro}.`); return; }
     setNee(prev => {
       const nombresExistentes = prev.estudiantes.map(e => e.nombre);
       const nuevos = encontrados.filter(e => !nombresExistentes.includes(e.nombre))
         .map(cat => aplicarAutoseleccionEst(
-          {...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado},
-          prev.curso, prev.asignatura, prev.fechaLunes
+          {...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || ""},
+          prev.curso, prev.asignatura, prev.fechaLunes, hk
         ));
       if (nuevos.length === 0) { alert("Todos los estudiantes de ese curso ya están agregados."); return prev; }
       return {...prev, estudiantes:[...prev.estudiantes, ...nuevos]};
@@ -340,13 +381,13 @@ function FormularioUEPA() {
   }));
 
   // Autoselecciona días y horas de un estudiante según SU curso y materia del horario
-  const aplicarAutoseleccionEst = (est, cursoForm, materiaForm, fechaLunes) => {
+  const aplicarAutoseleccionEst = (est, cursoForm, materiaForm, fechaLunes, horarioKey) => {
     if (!est) return est;
     if (est.materias && est.materias.length === 0) return est;
     const curso = est.curso || cursoForm;
     const materia = (est.materias && est.materias[0]) || materiaForm;
-    if (!curso || !materia || esMateriaLenguaje(materia)) return est;
-    const { dias, horas, clases } = autoseleccionar(curso, materia);
+    if (!curso || !materia) return est;
+    const { dias, horas, clases } = autoseleccionar(curso, materia, horarioKey);
     if (dias.length === 0) return est;
     const tiempo = String(getDuracionPorHora(horas[0]));
     const tc = TIEMPOS_CLASE.find(x => x.valor === tiempo) || TIEMPOS_CLASE[1];
@@ -367,14 +408,15 @@ function FormularioUEPA() {
     return {...est, diasSel: dias, dias: nuevosDias};
   };
 
-  // Reaplicar autoselección a todos los estudiantes cuando cambia curso/asignatura NEE
+  // Reaplicar autoselección a todos los estudiantes cuando cambia curso/asignatura/docente NEE
   useEffect(() => {
     if (!nee.asignatura || !nee.curso || nee.estudiantes.length === 0) return;
+    const hk = horarioKeyDocente(nee.docenteSel);
     setNee(prev => ({
       ...prev,
-      estudiantes: prev.estudiantes.map(est => aplicarAutoseleccionEst(est, prev.curso, prev.asignatura, prev.fechaLunes)),
+      estudiantes: prev.estudiantes.map(est => aplicarAutoseleccionEst(est, prev.curso, prev.asignatura, prev.fechaLunes, hk)),
     }));
-  }, [nee.asignatura, nee.curso]);
+  }, [nee.asignatura, nee.curso, nee.docenteSel]);
 
   // Calcular fecha automática a partir del lunes
   const calcFechaDia = (fechaLunes, dia) => {
@@ -886,13 +928,16 @@ function FormularioUEPA() {
             Plan Diario — Formato UEPA
           </h2>
           <div className="fila-dos">
-            <div className="campo"><label>👤 Nombre del docente</label>
-              <input value={pd.docente} onChange={e=>setPd(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
+            <div className="campo"><label>👤 DOCENTE</label>
+              <select value={pd.docenteSel} onChange={e=>cambiarDocentePD(e.target.value)}>
+                <option value="">Seleccionar docente...</option>
+                {Object.keys(DOCENTES).map(d=><option key={d}>{d}</option>)}
+              </select>
             </div>
             <div className="campo"><label>Asignatura</label>
               <select value={pd.asignatura} onChange={e=>setPd(p=>({...p,asignatura:e.target.value}))}>
                 <option value="">Seleccionar...</option>
-                {ASIGNATURAS.map(a=><option key={a}>{a}</option>)}
+                {materiasDocente(pd.docenteSel).map(a=><option key={a}>{a}</option>)}
               </select>
             </div>
           </div>
@@ -900,8 +945,11 @@ function FormularioUEPA() {
             <div className="campo"><label>Curso</label>
               <select value={pd.curso} onChange={e=>setPd(p=>({...p,curso:e.target.value}))}>
                 <option value="">Seleccionar...</option>
-                {CURSOS.map(c=><option key={c}>{c}</option>)}
+                {cursosDocente(pd.docenteSel).map(c=><option key={c}>{c}</option>)}
               </select>
+            </div>
+            <div className="campo"><label>👤 Nombre del docente</label>
+              <input value={pd.docente} onChange={e=>setPd(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
             </div>
           </div>
           <div className="fila-tres">
@@ -936,14 +984,9 @@ function FormularioUEPA() {
                 </label>
               ))}
             </div>
-            {pd.curso && pd.asignatura && !esMateriaLenguaje(pd.asignatura) && (
+            {pd.curso && pd.asignatura && (
               <p style={{fontSize:"0.75rem",color:"#2b6cb0",marginTop:"0.5rem"}}>
-                ✅ Días y horas autoseleccionados según tu horario real (puedes modificarlos manualmente)
-              </p>
-            )}
-            {pd.curso && pd.asignatura && esMateriaLenguaje(pd.asignatura) && (
-              <p style={{fontSize:"0.75rem",color:"#718096",marginTop:"0.5rem"}}>
-                ℹ️ Lenguaje no está en el horario automático: selecciona días y horas manualmente
+                ✅ Días y horas autoseleccionados según el horario de {pd.docenteSel || "docente"} (puedes modificarlos manualmente)
               </p>
             )}
           </div>
@@ -1029,13 +1072,16 @@ function FormularioUEPA() {
             Adaptación Curricular — NEE
           </h2>
           <div className="fila-dos">
-            <div className="campo"><label>👤 Nombre del docente</label>
-              <input value={nee.docente} onChange={e=>setNee(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
+            <div className="campo"><label>👤 DOCENTE</label>
+              <select value={nee.docenteSel} onChange={e=>cambiarDocenteNEE(e.target.value)}>
+                <option value="">Seleccionar docente...</option>
+                {Object.keys(DOCENTES).map(d=><option key={d}>{d}</option>)}
+              </select>
             </div>
             <div className="campo"><label>Asignatura</label>
               <select value={nee.asignatura} onChange={e=>setNee(p=>({...p,asignatura:e.target.value}))}>
                 <option value="">Seleccionar...</option>
-                {ASIGNATURAS.map(a=><option key={a}>{a}</option>)}
+                {materiasDocente(nee.docenteSel).map(a=><option key={a}>{a}</option>)}
               </select>
             </div>
           </div>
@@ -1043,8 +1089,11 @@ function FormularioUEPA() {
             <div className="campo"><label>Curso</label>
               <select value={nee.curso} onChange={e=>setNee(p=>({...p,curso:e.target.value}))}>
                 <option value="">Seleccionar...</option>
-                {CURSOS.map(c=><option key={c}>{c}</option>)}
+                {cursosDocente(nee.docenteSel).map(c=><option key={c}>{c}</option>)}
               </select>
+            </div>
+            <div className="campo"><label>👤 Nombre del docente</label>
+              <input value={nee.docente} onChange={e=>setNee(p=>({...p,docente:e.target.value}))} placeholder="Ej: LIC. JOSUÉ CRUZ ZAMBRANO"/>
             </div>
           </div>
           <div className="fila-tres">
@@ -1072,15 +1121,15 @@ function FormularioUEPA() {
             <div style={{display:"flex",gap:"0.5rem",alignItems:"center",flexWrap:"wrap"}}>
               <select id="catalogo-nee-select" style={{padding:"0.5rem",border:"1.5px solid #e2e8f0",borderRadius:"8px",fontSize:"0.85rem",minWidth:"260px"}}>
                 <option value="">— Seleccionar estudiante registrado —</option>
-                {CATALOGO_NEE.map((e,i)=><option key={i} value={i}>{e.nombre} ({e.curso || "Sin curso"}) — {e.diagnostico}</option>)}
+                {catalogoNeeDocente(nee.docenteSel).map((e,i)=><option key={i} value={i}>{e.nombre} ({e.curso || "Sin curso"}) — {e.diagnostico}</option>)}
               </select>
               <button onClick={()=>{
                 const sel = document.getElementById("catalogo-nee-select");
                 const idx = sel.value;
                 if (idx === "") { alert("Selecciona un estudiante de la lista."); return; }
-                const cat = CATALOGO_NEE[parseInt(idx)];
-                const nuevo = { ...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado };
-                setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, aplicarAutoseleccionEst(nuevo, prev.curso, prev.asignatura, prev.fechaLunes)]}));
+                const cat = catalogoNeeDocente(nee.docenteSel)[parseInt(idx)];
+                const nuevo = { ...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || "" };
+                setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, aplicarAutoseleccionEst(nuevo, prev.curso, prev.asignatura, prev.fechaLunes, horarioKeyDocente(prev.docenteSel))]}));
                 sel.value = "";
               }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>
                 ✚ Agregar seleccionado
