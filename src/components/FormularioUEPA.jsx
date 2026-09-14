@@ -50,9 +50,16 @@ const CATALOGO_NEE = [
 ];
 
 // Catálogos de estudiantes NEE por docente (independientes entre sí)
+const CATALOGO_NEE_REYES = [
+  { nombre: "DELGADO LOOR RODDY DANIEL", curso: "CUARTO EGB", diagnostico: "TRASTORNO DEL APRENDIZAJE", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Al que pertenece", nivelCurricularDetalle: "", materias: ["INGLÉS"] },
+  { nombre: "VILLEGAS TERÁN ANDRYK LEONARDO", curso: "CUARTO EGB", diagnostico: "TRASTORNO DEL APRENDIZAJE", tipo: "Transitoria", grado: "Grado 2", nivelCurricular: "Al que pertenece", nivelCurricularDetalle: "", materias: ["INGLÉS"] },
+  { nombre: "DELGADO INTRIAGO CARLOS ISAIAS", curso: "QUINTO EGB", diagnostico: "AUTISMO", tipo: "Permanente", grado: "Grado 3", asociada: "Asociada a discapacidad", nivelCurricular: "Adaptación curricular", nivelCurricularDetalle: "", materias: ["INGLÉS"] },
+];
+
 const CATALOGOS_NEE = {
   "LIC. JOSUÉ CRUZ ZAMBRANO": CATALOGO_NEE,
   "LIC. KEVIN BARRETO SOLEDISPA": CATALOGO_NEE_KEVIN,
+  "LIC. VICTOR REYES": CATALOGO_NEE_REYES,
 };
 
 const diaVacio = (tiempo = "40") => {
@@ -369,7 +376,7 @@ function FormularioUEPA() {
       const nombresExistentes = prev.estudiantes.map(e => e.nombre);
       const nuevos = encontrados.filter(e => !nombresExistentes.includes(e.nombre))
         .map(cat => aplicarAutoseleccionEst(
-          {...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || ""},
+          {...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, asociada: cat.asociada || "No asociada a discapacidad", nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || ""},
           prev.curso, prev.asignatura, prev.fechaLunes, hk
         ));
       if (nuevos.length === 0) { alert("Todos los estudiantes de ese curso ya están agregados."); return prev; }
@@ -1128,7 +1135,7 @@ function FormularioUEPA() {
                 const idx = sel.value;
                 if (idx === "") { alert("Selecciona un estudiante de la lista."); return; }
                 const cat = catalogoNeeDocente(nee.docenteSel)[parseInt(idx)];
-                const nuevo = { ...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || "" };
+                const nuevo = { ...estVacio(), nombre: cat.nombre, curso: cat.curso, materias: cat.materias || [], diagnostico: cat.diagnostico, tipo: cat.tipo, grado: cat.grado, asociada: cat.asociada || "No asociada a discapacidad", nivelCurricular: cat.nivelCurricular || "Al que pertenece", nivelCurricularDetalle: cat.nivelCurricularDetalle || "" };
                 setNee(prev => ({...prev, estudiantes:[...prev.estudiantes, aplicarAutoseleccionEst(nuevo, prev.curso, prev.asignatura, prev.fechaLunes, horarioKeyDocente(prev.docenteSel))]}));
                 sel.value = "";
               }} style={{padding:"0.5rem 1rem",background:"#276749",color:"white",border:"none",borderRadius:"8px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>

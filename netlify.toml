@@ -6,6 +6,10 @@
 [build.environment]
   CI = "false"
 
+[[edge_functions]]
+  function = "auth-gate"
+  path = "/*"
+
 [dev]
   command = "npm start"
   targetPort = 3000

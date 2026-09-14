@@ -14,6 +14,24 @@ exports.handler = async function (event) {
   };
   const dur = duraciones[tiempo] || duraciones["40"];
 
+  // Victor Reyes (INGLÉS) planifica con su propio formato: 5/30/5 minutos
+  const esIngles = String(asignatura || "").toUpperCase().includes("INGLÉS");
+  if (esIngles) {
+    dur.inicio = "5 MIN";
+    dur.desarrollo = "30 MIN";
+    dur.cierre = "5 MIN";
+  }
+
+  // Estilo de planificación extraído de los planes reales de INGLÉS (carpeta INGLES)
+  const estiloIngles = esIngles ? `
+ESTILO DE PLANIFICACIÓN DEL DOCENTE DE INGLÉS (OBLIGATORIO, imitar sus planes reales):
+- "contenido": código de unidad con título en inglés, ej: "3.8 Evaluation – Explore and Review.", "4.1 Vocabulary Review – Adjectives.", "3.6 Meeting Point – I Respect the Rules of my Neighborhood."
+- "actividades": cada línea empieza con "• " y describe acciones concretas: saludo inicial en inglés, repaso visual, desarrollo de páginas del libro de inglés (indicar número de página), lectura y completación, vocabulario nuevo, socialización, corrección grupal, feedback.
+- "duracion": Inicio "5 MIN", Desarrollo "30 MIN", Cierre "5 MIN".
+- "recursos": PIZARRA, MARCADORES, LIBRO DE INGLÉS (PAG XX), CARPETA; agregar HOJAS DE TRABAJO o SALA DE PROYECCIÓN si aplica.
+- Evaluación: Inicio → técnica "OBSERVACIÓN DIRECTA", instrumento "-". Desarrollo → técnica "PRODUCCIÓN ORAL Y ESCRITA", instrumento "LIBRO DE INGLÉS". Cierre → técnica "PARTICIPACIÓN ORAL", instrumento "-".
+` : "";
+
   let prompt;
 
   if (esNEE) {
@@ -43,7 +61,7 @@ REGLAS DE FORMATO:
 - El campo "contenido" debe contener ÚNICAMENTE el nombre del tema (ej: "El plano cartesiano", "Ecuaciones lineales"). Solo el tema, nada más.
 - El campo "actividades" es donde va la EXPLICACIÓN de lo que se hará en clase: 3-4 frases concretas y detalladas que expliquen paso a paso qué hará el docente, qué hará el estudiante, qué materiales usará, cómo se adapta al diagnóstico, etc.
 
-${temas.length > 1 ? 'Usa el tema correspondiente para cada día en orden.' : ''}
+${temas.length > 1 ? 'Usa el tema correspondiente para cada día en orden.' : ''}${estiloIngles}
 Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
 
 {
@@ -106,7 +124,7 @@ REGLAS DE FORMATO OBLIGATORIAS:
    - Qué harán los estudiantes (ejercicios, trabajo en libro, práctica)
    - Si el docente indicó detalles específicos (página del libro, tipo de ejercicio), incorpóralos
    - Cómo se desarrolla paso a paso la actividad
-
+${estiloIngles}
 Responde ÚNICAMENTE con JSON, sin texto adicional, sin markdown.
 
 {

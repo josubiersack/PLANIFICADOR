@@ -53,6 +53,61 @@ export const CURSOS_JOSUE = ["OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVEN
 
 export const CURSOS_KEVIN = ["NOVENO EGB A","NOVENO EGB B","DÉCIMO EGB A","DÉCIMO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
 
+export const CURSOS_REYES = ["SEGUNDO EGB A","SEGUNDO EGB B","TERCERO EGB A","TERCERO EGB B","CUARTO EGB","QUINTO EGB","SEXTO EGB","SÉPTIMO EGB","OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVENO EGB B","DÉCIMO EGB A","DÉCIMO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
+
+// Horario de LIC. VICTOR REYES — INGLÉS (transcrito de su horario oficial, 39 clases)
+// Hora 6 (10:50–11:20) dura 30 minutos; horas 1-5 = 40 min; horas 7-8 = 35 min.
+export const HORARIO_REYES = [
+  // LUNES
+  { dia: "LUNES", hora: 1, curso: "NOVENO EGB B", materia: "INGLÉS", duracion: 40 },
+  { dia: "LUNES", hora: 2, curso: "QUINTO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "LUNES", hora: 3, curso: "CUARTO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "LUNES", hora: 4, curso: "DÉCIMO EGB B", materia: "INGLÉS", duracion: 40 },
+  { dia: "LUNES", hora: 5, curso: "OCTAVO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "LUNES", hora: 6, curso: "SEGUNDO EGB A", materia: "INGLÉS", duracion: 30 },
+  { dia: "LUNES", hora: 6, curso: "SEGUNDO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "LUNES", hora: 7, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 35 },
+  { dia: "LUNES", hora: 8, curso: "TERCERO BGU", materia: "INGLÉS", duracion: 35 },
+  // MARTES
+  { dia: "MARTES", hora: 1, curso: "OCTAVO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "MARTES", hora: 2, curso: "DÉCIMO EGB B", materia: "INGLÉS", duracion: 40 },
+  { dia: "MARTES", hora: 3, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "MARTES", hora: 4, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "MARTES", hora: 5, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "MARTES", hora: 6, curso: "TERCERO EGB A", materia: "INGLÉS", duracion: 30 },
+  { dia: "MARTES", hora: 6, curso: "TERCERO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "MARTES", hora: 7, curso: "OCTAVO EGB B", materia: "INGLÉS", duracion: 35 },
+  { dia: "MARTES", hora: 8, curso: "SEGUNDO BGU", materia: "INGLÉS", duracion: 35 },
+  // MIÉRCOLES
+  { dia: "MIÉRCOLES", hora: 1, curso: "OCTAVO EGB B", materia: "INGLÉS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 2, curso: "TERCERO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 3, curso: "OCTAVO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 4, curso: "SEGUNDO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "MIÉRCOLES", hora: 6, curso: "SEXTO EGB", materia: "INGLÉS", duracion: 30 },
+  { dia: "MIÉRCOLES", hora: 7, curso: "DÉCIMO EGB B", materia: "INGLÉS", duracion: 35 },
+  { dia: "MIÉRCOLES", hora: 8, curso: "NOVENO EGB B", materia: "INGLÉS", duracion: 35 },
+  // JUEVES
+  { dia: "JUEVES", hora: 1, curso: "SÉPTIMO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "JUEVES", hora: 2, curso: "QUINTO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "JUEVES", hora: 3, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 40 },
+  { dia: "JUEVES", hora: 4, curso: "NOVENO EGB B", materia: "INGLÉS", duracion: 40 },
+  { dia: "JUEVES", hora: 5, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "JUEVES", hora: 6, curso: "SEGUNDO EGB A", materia: "INGLÉS", duracion: 30 },
+  { dia: "JUEVES", hora: 6, curso: "SEGUNDO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "JUEVES", hora: 7, curso: "OCTAVO EGB B", materia: "INGLÉS", duracion: 35 },
+  { dia: "JUEVES", hora: 8, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 35 },
+  // VIERNES
+  { dia: "VIERNES", hora: 1, curso: "SÉPTIMO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "VIERNES", hora: 2, curso: "TERCERO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "VIERNES", hora: 3, curso: "CUARTO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "VIERNES", hora: 4, curso: "SEXTO EGB", materia: "INGLÉS", duracion: 40 },
+  { dia: "VIERNES", hora: 5, curso: "SEGUNDO BGU", materia: "INGLÉS", duracion: 40 },
+  { dia: "VIERNES", hora: 6, curso: "TERCERO EGB A", materia: "INGLÉS", duracion: 30 },
+  { dia: "VIERNES", hora: 6, curso: "TERCERO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "VIERNES", hora: 7, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 35 },
+  { dia: "VIERNES", hora: 8, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 35 },
+];
+
 // Configuración centralizada y escalable de docentes.
 // Cada docente define sus materias, cursos y horario propios.
 export const DOCENTES = {
@@ -66,9 +121,12 @@ export const DOCENTES = {
     cursos: CURSOS_KEVIN,
     horario: "KEVIN",
   },
+  "LIC. VICTOR REYES": {
+    materias: ["INGLÉS"],
+    cursos: CURSOS_REYES,
+    horario: "REYES",
+  },
 };
-
-const HORARIOS = { JOSUE: null, KEVIN: HORARIO_KEVIN };
 
 export const HORARIO_COMPLETO = [
   // LUNES
@@ -113,6 +171,10 @@ export const HORARIO_COMPLETO = [
   { dia: "VIERNES", hora: 6, curso: "NOVENO EGB B", materia: "MATEMÁTICAS", duracion: 35 },
 ];
 
+// Mapa de horarios por clave de docente. Para un nuevo docente: crear su
+// HORARIO_<NOMBRE>, agregar su entrada en DOCENTES y registrarla aquí.
+const HORARIOS_POR_DOCENTE = { JOSUE: HORARIO_COMPLETO, KEVIN: HORARIO_KEVIN, REYES: HORARIO_REYES };
+
 const CURSO_MAP = {
   "8VO EGB A": "OCTAVO EGB A",
   "8VO EGB B": "OCTAVO EGB B",
@@ -151,7 +213,7 @@ export function obtenerClases(curso, materia, horarioKey) {
   const c = normalizarCurso(curso);
   const m = normalizarMateria(materia);
   if (!c || !m) return [];
-  const horario = horarioKey === "KEVIN" ? HORARIO_KEVIN : HORARIO_COMPLETO;
+  const horario = HORARIOS_POR_DOCENTE[horarioKey] || HORARIO_COMPLETO;
   return horario.filter(clase => clase.curso === c && clase.materia === m);
 }
 
@@ -168,7 +230,6 @@ export function horaLabel(hora) {
 export function autoseleccionar(curso, materia, horarioKey) {
   const clases = obtenerClases(curso, materia, horarioKey);
   if (clases.length === 0) {
-    console.log("🔍 autoseleccionar (sin coincidencias):", { curso, materia, normalizado: normalizarCurso(curso) + " / " + normalizarMateria(materia) });
     return { dias: [], horas: [], clases: [] };
   }
   const diasSet = new Set();
@@ -179,6 +240,5 @@ export function autoseleccionar(curso, materia, horarioKey) {
   });
   const dias = DIAS_ORDEN.filter(d => diasSet.has(d));
   const horas = Array.from(horasSet).sort((a, b) => a - b);
-  console.log("🔍 autoseleccionar:", { cursoOriginal: curso, materiaOriginal: materia, cursoNormalizado: normalizarCurso(curso), materiaNormalizada: normalizarMateria(materia), clasesEncontradas: clases.length, dias, horas });
   return { dias, horas, clases };
 }
