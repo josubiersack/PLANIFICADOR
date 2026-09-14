@@ -5,6 +5,8 @@ import jsPDF from "jspdf";
 
 function VistaPlan({ planificacion: p }) {
   const { datosInformativos: d, metodologia: m } = p;
+  // Interlineado ampliado (≈1.25x) SOLO para párrafos con texto generado por la IA
+  const spacingIA = { line: 300, lineRule: "auto" };
 
   const exportarWord = async () => {
     const doc = new Document({
@@ -32,11 +34,12 @@ function VistaPlan({ planificacion: p }) {
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "OBJETIVO DE APRENDIZAJE", heading: HeadingLevel.HEADING_2 }),
-          new Paragraph({ text: p.objetivoAprendizaje }),
+          new Paragraph({ text: p.objetivoAprendizaje, spacing: spacingIA }),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "DESTREZAS CON CRITERIO DE DESEMPEÑO", heading: HeadingLevel.HEADING_2 }),
           ...p.destrezas.map(dest => new Paragraph({
+            spacing: spacingIA,
             children: [new TextRun({ text: `${dest.codigo}: `, bold: true }), new TextRun(dest.descripcion)]
           })),
           new Paragraph({ text: "" }),
@@ -48,40 +51,40 @@ function VistaPlan({ planificacion: p }) {
           new Paragraph({ text: "METODOLOGÍA", heading: HeadingLevel.HEADING_2 }),
 
           new Paragraph({ text: `ANTICIPACIÓN (${m.anticipacion.duracion})`, heading: HeadingLevel.HEADING_3 }),
-          new Paragraph({ children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.anticipacion.estrategia)] }),
-          ...m.anticipacion.actividades.map(a => new Paragraph({ text: `• ${a}` })),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.anticipacion.estrategia)] }),
+          ...m.anticipacion.actividades.map(a => new Paragraph({ text: `• ${a}`, spacing: spacingIA })),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: `CONSTRUCCIÓN (${m.construccion.duracion})`, heading: HeadingLevel.HEADING_3 }),
-          new Paragraph({ children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.construccion.estrategia)] }),
-          ...m.construccion.actividades.map(a => new Paragraph({ text: `• ${a}` })),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.construccion.estrategia)] }),
+          ...m.construccion.actividades.map(a => new Paragraph({ text: `• ${a}`, spacing: spacingIA })),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: `CONSOLIDACIÓN (${m.consolidacion.duracion})`, heading: HeadingLevel.HEADING_3 }),
-          new Paragraph({ children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.consolidacion.estrategia)] }),
-          ...m.consolidacion.actividades.map(a => new Paragraph({ text: `• ${a}` })),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Estrategia: ", bold: true }), new TextRun(m.consolidacion.estrategia)] }),
+          ...m.consolidacion.actividades.map(a => new Paragraph({ text: `• ${a}`, spacing: spacingIA })),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "DISEÑO UNIVERSAL PARA EL APRENDIZAJE (DUA)", heading: HeadingLevel.HEADING_2 }),
-          new Paragraph({ children: [new TextRun({ text: "Representación: ", bold: true }), new TextRun(p.dua.representacion)] }),
-          new Paragraph({ children: [new TextRun({ text: "Acción y expresión: ", bold: true }), new TextRun(p.dua.accionExpresion)] }),
-          new Paragraph({ children: [new TextRun({ text: "Motivación: ", bold: true }), new TextRun(p.dua.motivacion)] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Representación: ", bold: true }), new TextRun(p.dua.representacion)] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Acción y expresión: ", bold: true }), new TextRun(p.dua.accionExpresion)] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Motivación: ", bold: true }), new TextRun(p.dua.motivacion)] }),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "EVALUACIÓN", heading: HeadingLevel.HEADING_2 }),
-          new Paragraph({ children: [new TextRun({ text: "Técnicas: ", bold: true }), new TextRun(p.evaluacion.tecnicas.join(", "))] }),
-          new Paragraph({ children: [new TextRun({ text: "Instrumentos: ", bold: true }), new TextRun(p.evaluacion.instrumentos.join(", "))] }),
-          new Paragraph({ children: [new TextRun({ text: "Criterios: ", bold: true }), new TextRun(p.evaluacion.criterios.join(", "))] }),
-          new Paragraph({ children: [new TextRun({ text: "Evidencias: ", bold: true }), new TextRun(p.evaluacion.evidencias.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Técnicas: ", bold: true }), new TextRun(p.evaluacion.tecnicas.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Instrumentos: ", bold: true }), new TextRun(p.evaluacion.instrumentos.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Criterios: ", bold: true }), new TextRun(p.evaluacion.criterios.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Evidencias: ", bold: true }), new TextRun(p.evaluacion.evidencias.join(", "))] }),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "RECURSOS", heading: HeadingLevel.HEADING_2 }),
-          new Paragraph({ children: [new TextRun({ text: "Materiales físicos: ", bold: true }), new TextRun(p.recursos.materialesFisicos.join(", "))] }),
-          new Paragraph({ children: [new TextRun({ text: "Recursos digitales: ", bold: true }), new TextRun(p.recursos.recursosDigitales.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Materiales físicos: ", bold: true }), new TextRun(p.recursos.materialesFisicos.join(", "))] }),
+          new Paragraph({ spacing: spacingIA, children: [new TextRun({ text: "Recursos digitales: ", bold: true }), new TextRun(p.recursos.recursosDigitales.join(", "))] }),
           new Paragraph({ text: "" }),
 
           new Paragraph({ text: "INDICADORES DE EVALUACIÓN", heading: HeadingLevel.HEADING_2 }),
-          ...p.indicadoresEvaluacion.map(ind => new Paragraph({ text: `• ${ind}` })),
+          ...p.indicadoresEvaluacion.map(ind => new Paragraph({ text: `• ${ind}`, spacing: spacingIA })),
         ],
       }],
     });
@@ -99,8 +102,8 @@ function VistaPlan({ planificacion: p }) {
     const salto = (extra = 6) => { y += extra; if (y > 270) { pdf.addPage(); y = 20; } };
     const titulo = (texto) => { pdf.setFontSize(13); pdf.setFont("helvetica", "bold"); pdf.setTextColor(26, 54, 93); const lineas = pdf.splitTextToSize(texto, ancho); pdf.text(lineas, margen, y); y += lineas.length * 6; salto(3); };
     const subtitulo = (texto) => { pdf.setFontSize(10); pdf.setFont("helvetica", "bold"); pdf.setTextColor(43, 108, 176); const lineas = pdf.splitTextToSize(texto, ancho); pdf.text(lineas, margen, y); y += lineas.length * 5; salto(2); };
-    const cuerpo = (texto) => { pdf.setFontSize(10); pdf.setFont("helvetica", "normal"); pdf.setTextColor(60, 60, 60); const lineas = pdf.splitTextToSize(texto, ancho); pdf.text(lineas, margen, y); y += lineas.length * 5; salto(2); };
-    const campo = (etiqueta, valor) => { pdf.setFontSize(10); pdf.setFont("helvetica", "bold"); pdf.setTextColor(60, 60, 60); pdf.text(`${etiqueta}:`, margen, y); pdf.setFont("helvetica", "normal"); const lineas = pdf.splitTextToSize(valor || "", ancho - 40); pdf.text(lineas, margen + 38, y); y += Math.max(lineas.length * 5, 6); };
+    const cuerpo = (texto) => { pdf.setFontSize(10); pdf.setFont("helvetica", "normal"); pdf.setTextColor(60, 60, 60); const lineas = pdf.splitTextToSize(texto, ancho); pdf.text(lineas, margen, y); y += lineas.length * 6; salto(2); };
+    const campo = (etiqueta, valor, mult = 5) => { pdf.setFontSize(10); pdf.setFont("helvetica", "bold"); pdf.setTextColor(60, 60, 60); pdf.text(`${etiqueta}:`, margen, y); pdf.setFont("helvetica", "normal"); const lineas = pdf.splitTextToSize(valor || "", ancho - 40); pdf.text(lineas, margen + 38, y); y += Math.max(lineas.length * mult, 6); };
 
     pdf.setFontSize(16); pdf.setFont("helvetica", "bold"); pdf.setTextColor(26, 54, 93);
     pdf.text("PLANIFICACIÓN MICROCURRICULAR", 105, y, { align: "center" }); salto(5);
@@ -133,19 +136,19 @@ function VistaPlan({ planificacion: p }) {
     m.consolidacion.actividades.forEach(a => cuerpo(`• ${a}`)); salto(4);
 
     titulo("DUA - DISEÑO UNIVERSAL PARA EL APRENDIZAJE");
-    campo("Representación", p.dua.representacion);
-    campo("Acción y expresión", p.dua.accionExpresion);
-    campo("Motivación", p.dua.motivacion); salto(4);
+    campo("Representación", p.dua.representacion, 6);
+    campo("Acción y expresión", p.dua.accionExpresion, 6);
+    campo("Motivación", p.dua.motivacion, 6); salto(4);
 
     titulo("EVALUACIÓN");
-    campo("Técnicas", p.evaluacion.tecnicas.join(", "));
-    campo("Instrumentos", p.evaluacion.instrumentos.join(", "));
-    campo("Criterios", p.evaluacion.criterios.join(", "));
-    campo("Evidencias", p.evaluacion.evidencias.join(", ")); salto(4);
+    campo("Técnicas", p.evaluacion.tecnicas.join(", "), 6);
+    campo("Instrumentos", p.evaluacion.instrumentos.join(", "), 6);
+    campo("Criterios", p.evaluacion.criterios.join(", "), 6);
+    campo("Evidencias", p.evaluacion.evidencias.join(", "), 6); salto(4);
 
     titulo("RECURSOS");
-    campo("Materiales físicos", p.recursos.materialesFisicos.join(", "));
-    campo("Recursos digitales", p.recursos.recursosDigitales.join(", ")); salto(4);
+    campo("Materiales físicos", p.recursos.materialesFisicos.join(", "), 6);
+    campo("Recursos digitales", p.recursos.recursosDigitales.join(", "), 6); salto(4);
 
     titulo("INDICADORES DE EVALUACIÓN");
     p.indicadoresEvaluacion.forEach(ind => cuerpo(`• ${ind}`));

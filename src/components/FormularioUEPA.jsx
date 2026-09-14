@@ -155,6 +155,44 @@ const celdaIzq = (texto, bold=false, bg=null) => new TableCell({
   })]
 });
 
+// Divide un texto de la IA en viñetas separadas por "• " (descarta vacías)
+const dividirVinetas = (texto) => String(texto || "").split("•").map(p => p.trim()).filter(p => p);
+
+// Celda DOCX para contenido de IA: cada viñeta en su propio Paragraph (con interlineado ampliado)
+const celdaVinetas = (texto, bold=false, bg=null, colspan=1) => {
+  const vinetas = dividirVinetas(texto);
+  const children = vinetas.length > 1
+    ? vinetas.map(v => new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { line: 300, lineRule: "auto" },
+        children:[new TextRun({text:`• ${v}`, bold, size:18, font:"Arial"})]
+      }))
+    : [new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { line: 300, lineRule: "auto" },
+        children:[new TextRun({text:String(texto||""), bold, size:18, font:"Arial"})]
+      })];
+  return new TableCell({
+    columnSpan: colspan,
+    shading: bg ? {fill:bg} : undefined,
+    verticalAlign: VerticalAlign.CENTER,
+    children,
+  });
+};
+
+// XLSX: viñetas "• " como líneas separadas (la celda ya tiene wrapText:true)
+const xlsxVinetas = (v) => {
+  const partes = dividirVinetas(v);
+  return partes.length > 1 ? partes.map(p => `• ${p}`).join("\n") : (v || "");
+};
+
+// HTML: cada viñeta en su propio <li> con interlineado ampliado solo en la lista
+const htmlVinetas = (texto) => {
+  const partes = dividirVinetas(texto);
+  if (partes.length <= 1) return String(texto || "");
+  return `<ul style="margin:0;padding-left:14px;line-height:1.4;">${partes.map(p => `<li>${p}</li>`).join("")}</ul>`;
+};
+
 const getBuffer = async (url) => {
   const r = await fetch(url);
   return await r.arrayBuffer();
@@ -625,8 +663,8 @@ function FormularioUEPA() {
               const faseColor = fase==="inicio"?"FFF2CC":fase==="desarrollo"?"C6EFCE":"A9D08E";
               return new TableRow({children:[
               celda(fase.charAt(0).toUpperCase()+fase.slice(1),true,faseColor),
-              celda(d[fase].contenido||""),
-              celda(d[fase].actividades||""),
+              celdaVinetas(d[fase].contenido||""),
+              celdaVinetas(d[fase].actividades||""),
               celda(d[fase].duracion||""),
               celda(d[fase].recursos||""),
               celda(d[fase].tecnica||""),
@@ -741,7 +779,8 @@ function FormularioUEPA() {
           setC(r,1,fase.charAt(0).toUpperCase()+fase.slice(1),{name:"Arial",size:9,bold:true},colLt);
           ws.getCell(r,1).alignment={horizontal:"center"};
           [fd.contenido,fd.actividades,fd.duracion,fd.recursos,fd.tecnica,fd.instrumento].forEach((v,i)=>{
-            const c = setC(r,i+2,v||"",{name:"Arial",size:9}); c.alignment={wrapText:true};
+            const val = (i === 0 || i === 1) ? xlsxVinetas(v) : v;
+            const c = setC(r,i+2,val||"",{name:"Arial",size:9}); c.alignment={wrapText:true};
           }); r++;
         }
         r++;
@@ -806,8 +845,8 @@ function FormularioUEPA() {
         const faseColor = fase==='inicio'?'#FFF2CC':fase==='desarrollo'?'#C6EFCE':'#A9D08E';
         html += `<tr>
           <td style="border:1px solid #000;font-weight:bold;text-align:center;padding:4px;background:${faseColor};text-transform:capitalize;">${fase}</td>
-          <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.contenido||''}</td>
-          <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.actividades||''}</td>
+          <td style="border:1px solid #000;padding:4px;font-size:10px;">${htmlVinetas(fd.contenido)}</td>
+          <td style="border:1px solid #000;padding:4px;font-size:10px;">${htmlVinetas(fd.actividades)}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;text-align:center;">${fd.duracion||''}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.recursos||''}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.tecnica||''}</td>
@@ -865,8 +904,8 @@ function FormularioUEPA() {
         const fd = dd[fase]||{};
         html += `<tr>
           <td style="border:1px solid #000;font-weight:bold;text-align:center;padding:4px;background:${colLt};text-transform:capitalize;">${fase}</td>
-          <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.contenido||''}</td>
-          <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.actividades||''}</td>
+          <td style="border:1px solid #000;padding:4px;font-size:10px;">${htmlVinetas(fd.contenido)}</td>
+          <td style="border:1px solid #000;padding:4px;font-size:10px;">${htmlVinetas(fd.actividades)}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;text-align:center;">${fd.duracion||''}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.recursos||''}</td>
           <td style="border:1px solid #000;padding:4px;font-size:10px;">${fd.tecnica||''}</td>

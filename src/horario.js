@@ -53,7 +53,7 @@ export const CURSOS_JOSUE = ["OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVEN
 
 export const CURSOS_KEVIN = ["NOVENO EGB A","NOVENO EGB B","DÉCIMO EGB A","DÉCIMO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
 
-export const CURSOS_REYES = ["SEGUNDO EGB A","SEGUNDO EGB B","TERCERO EGB A","TERCERO EGB B","CUARTO EGB","QUINTO EGB","SEXTO EGB","SÉPTIMO EGB","OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVENO EGB B","DÉCIMO EGB A","DÉCIMO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
+export const CURSOS_REYES = ["SEGUNDO EGB","TERCERO EGB","CUARTO EGB","QUINTO EGB","SEXTO EGB","SÉPTIMO EGB","OCTAVO EGB A","OCTAVO EGB B","NOVENO EGB A","NOVENO EGB B","DÉCIMO EGB A","DÉCIMO EGB B","PRIMERO BGU","SEGUNDO BGU","TERCERO BGU"];
 
 // Horario de LIC. VICTOR REYES — INGLÉS (transcrito de su horario oficial, 39 clases)
 // Hora 6 (10:50–11:20) dura 30 minutos; horas 1-5 = 40 min; horas 7-8 = 35 min.
@@ -64,8 +64,7 @@ export const HORARIO_REYES = [
   { dia: "LUNES", hora: 3, curso: "CUARTO EGB", materia: "INGLÉS", duracion: 40 },
   { dia: "LUNES", hora: 4, curso: "DÉCIMO EGB B", materia: "INGLÉS", duracion: 40 },
   { dia: "LUNES", hora: 5, curso: "OCTAVO EGB A", materia: "INGLÉS", duracion: 40 },
-  { dia: "LUNES", hora: 6, curso: "SEGUNDO EGB A", materia: "INGLÉS", duracion: 30 },
-  { dia: "LUNES", hora: 6, curso: "SEGUNDO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "LUNES", hora: 6, curso: "SEGUNDO EGB", materia: "INGLÉS", duracion: 30 },
   { dia: "LUNES", hora: 7, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 35 },
   { dia: "LUNES", hora: 8, curso: "TERCERO BGU", materia: "INGLÉS", duracion: 35 },
   // MARTES
@@ -74,8 +73,7 @@ export const HORARIO_REYES = [
   { dia: "MARTES", hora: 3, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 40 },
   { dia: "MARTES", hora: 4, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 40 },
   { dia: "MARTES", hora: 5, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 40 },
-  { dia: "MARTES", hora: 6, curso: "TERCERO EGB A", materia: "INGLÉS", duracion: 30 },
-  { dia: "MARTES", hora: 6, curso: "TERCERO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "MARTES", hora: 6, curso: "TERCERO EGB", materia: "INGLÉS", duracion: 30 },
   { dia: "MARTES", hora: 7, curso: "OCTAVO EGB B", materia: "INGLÉS", duracion: 35 },
   { dia: "MARTES", hora: 8, curso: "SEGUNDO BGU", materia: "INGLÉS", duracion: 35 },
   // MIÉRCOLES
@@ -92,8 +90,7 @@ export const HORARIO_REYES = [
   { dia: "JUEVES", hora: 3, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 40 },
   { dia: "JUEVES", hora: 4, curso: "NOVENO EGB B", materia: "INGLÉS", duracion: 40 },
   { dia: "JUEVES", hora: 5, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 40 },
-  { dia: "JUEVES", hora: 6, curso: "SEGUNDO EGB A", materia: "INGLÉS", duracion: 30 },
-  { dia: "JUEVES", hora: 6, curso: "SEGUNDO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "JUEVES", hora: 6, curso: "SEGUNDO EGB", materia: "INGLÉS", duracion: 30 },
   { dia: "JUEVES", hora: 7, curso: "OCTAVO EGB B", materia: "INGLÉS", duracion: 35 },
   { dia: "JUEVES", hora: 8, curso: "NOVENO EGB A", materia: "INGLÉS", duracion: 35 },
   // VIERNES
@@ -102,8 +99,7 @@ export const HORARIO_REYES = [
   { dia: "VIERNES", hora: 3, curso: "CUARTO EGB", materia: "INGLÉS", duracion: 40 },
   { dia: "VIERNES", hora: 4, curso: "SEXTO EGB", materia: "INGLÉS", duracion: 40 },
   { dia: "VIERNES", hora: 5, curso: "SEGUNDO BGU", materia: "INGLÉS", duracion: 40 },
-  { dia: "VIERNES", hora: 6, curso: "TERCERO EGB A", materia: "INGLÉS", duracion: 30 },
-  { dia: "VIERNES", hora: 6, curso: "TERCERO EGB B", materia: "INGLÉS", duracion: 30 },
+  { dia: "VIERNES", hora: 6, curso: "TERCERO EGB", materia: "INGLÉS", duracion: 30 },
   { dia: "VIERNES", hora: 7, curso: "DÉCIMO EGB A", materia: "INGLÉS", duracion: 35 },
   { dia: "VIERNES", hora: 8, curso: "PRIMERO BGU", materia: "INGLÉS", duracion: 35 },
 ];
